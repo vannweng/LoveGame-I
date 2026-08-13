@@ -1,0 +1,13 @@
+export const homeCopy = {
+  HOME_PLAYER_LABEL: 'P1/P2',
+  HOME_STAGE_LABEL: 'STAGE',
+  HOME_COUNTDOWN_SUBTITLE: 'DATE COUNTDOWN',
+  HOME_REMAIN_LABEL: 'REMAIN',
+  HOME_ADVICE_LABEL: '[ADVICE]',
+  HOME_IMPORTANT_DATE_ADVICE: '{label}倒數 {days} DAYS。現在開始準備，會比最後一刻更從容。',
+  HOME_NO_IMPORTANT_DATE: '尚未設定重要日。完成設定後即可顯示倒數。',
+  HOME_EXP_LABEL: 'EXP',
+  HOME_COMBO_LABEL: 'COMBO',
+  HOME_RANK_LABEL: 'RANK',
+  HOME_OPEN_MISSIONS: '查看任務',
+} as const;

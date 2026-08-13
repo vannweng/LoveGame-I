@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { advanceOnboarding } from '../../src/domain/onboarding';
+import { advanceOnboarding } from '@/features/relationship/domain';
 
 test('onboarding advances through every resumable status', () => {
   assert.equal(advanceOnboarding('intro'), 'profile');

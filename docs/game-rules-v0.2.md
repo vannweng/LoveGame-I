@@ -2,6 +2,12 @@
 
 ## 名詞
 
+## Content Config 原則
+
+任務模板、觸發時機、獎勵、Rank impact、結果文案、Rank 門檻與收藏解鎖門檻，皆以 versioned Content Config 管理。程式碼只負責讀取設定、生成任務快照與執行通用計算；不得把特定任務數值或文案硬寫在 UI、Application 或 Domain 函式中。
+
+目前設定位置：`src/content/missionTemplates.ts`、`src/content/gameRules.ts`、`src/content/copy.ts`。
+
 ### 紀念日（Important Date）
 
 關係設定中的準確日期，例如交往紀念日、結婚紀念日、生日與自訂重要日期。紀念日是該輪任務的最終截止基準。

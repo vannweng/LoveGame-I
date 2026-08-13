@@ -1,0 +1,11 @@
+export const rewardCopy = {
+  REWARD_TUTORIAL_DEFAULT: '你的第一份生存獎勵已領取。',
+  REWARD_TUTORIAL_SUMMARY: 'EXP +{exp} · Combo +{combo} · Rank +{rank}',
+  COLLECTION_EMPTY_TITLE: '圖鑑尚未解鎖',
+  COLLECTION_EMPTY_COPY: '完成生存任務，解鎖你的第一個稱號。',
+  COLLECTION_VAULT_UNLOCKED: '[VAULT] UNLOCKED {count}',
+  COLLECTION_TITLE_UNLOCKED: 'TITLE UNLOCKED',
+  COLLECTION_GG_RECORD: 'GG RECORD',
+  COLLECTION_TITLE_TAG: 'TITLE',
+  COLLECTION_GG_TAG: 'GG',
+} as const;

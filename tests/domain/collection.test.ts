@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { evaluateCollectionUnlocks } from '../../src/domain/collection';
-import type { CollectionState } from '../../src/domain/collection';
+import { evaluateCollectionUnlocks } from '@/features/collection/domain';
+import type { CollectionState } from '@/features/collection/domain';
 
 const emptyCollection: CollectionState = { items: [], graves: [] };
 const occurredAt = new Date('2026-08-10T12:00:00+08:00');

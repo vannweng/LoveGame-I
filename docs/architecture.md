@@ -16,18 +16,31 @@ Google native sign-in 與 push notification 需要原生設定，因此日常開
 ## 分層與依賴方向
 
 ```text
-Presentation (Expo Router, screens, components)
+UI（View、shared UI components）
                  ↓
 Application (use cases)
                  ↓
 Domain (pure TypeScript rules)
-                 ↑
-Repository interfaces
-                 ↑
-Data / Firebase / external-service adapters
+                 ↓
+Repository contracts
+                 ↓
+Firebase / external-service adapters
 ```
 
-`domain` 不得 import React、Expo、Firebase、Zustand 或 UI 元件。UI 只能發送意圖，例如 `completeMission(missionId)` 或 `abandonMission(missionId)`；結果由 Mission Resolver 判定。
+- UI 只負責顯示資料、接收點擊、呈現 loading 與 error；不得計算遊戲規則、直接存取 repository，或直接呼叫 Firebase／通知等外部服務。
+- 每個 View 的非同步資料流程一律經由 `shared/ui/ScreenState` 呈現 `loading`、`empty`、`error`、`success` 四種狀態；feature 內容只能在 `success` 狀態渲染。
+- `src/application/` 是 composition root，負責 navigation、providers 與開發用 Scenario；不得命名為 `src/app/`，因 Expo 會將該路徑視為 Expo Router 的保留路由目錄。
+- 開發用 Seed Data 與 Scenario 必須位於 `application/dev/`，只可在 `__DEV__` 下注入資料；不得改寫 Domain 規則、正式 repository 或正式玩家存檔。
+- 在開發環境可使用匿名 DEV 預覽身份略過第三方登入；此身份僅存在於記憶體，正式版不得顯示或啟用。
+- Application 只編排 use case 與 transaction 邊界，透過 repository contract 讀寫資料；不得依賴 React Native UI。
+- Domain 只處理純 TypeScript 商業／遊戲規則；不得 import React、Expo、Firebase、Zustand 或 UI 元件。
+- Repository contract 定義 feature 所需資料操作；實作放在 infrastructure，由 Firebase、SecureStore、通知或其他外部 service adapter 提供。
+- Analytics 事件必須使用 `shared/analytics/AnalyticsEvent.ts` 定義的白名單，並透過 infrastructure adapter 上報；禁止傳送姓名、email、日期名稱或其他個資。開發環境使用 console adapter，Production 可在 composition root 替換為受審查的服務 adapter。
+- `app_open` 由 Firebase Analytics 自動收集；不得由 client adapter 手動重複送出。事件表與共用參數規範見 `docs/analytics.md`。
+- `App.tsx` 是 composition root，只負責組裝 UI、Application 與 infrastructure 實作，不承載 feature 遊戲規則。
+- 所有可調整的遊戲數值、任務模板、解鎖門檻與顯示文案 key 必須存於 versioned Content Config；程式只讀取並套用設定，不得將這些規則散落在 UI、Application 或 Domain 函式中。
+- 所有使用者可見文案必須定義於 `src/content/copy/<feature>.ts`，採穩定大寫 key（如 `HOME_NO_IMPORTANT_DATE`）；UI、共用元件與外部通知 adapter 必須透過 `getCopy()` 取得文字。動態值以 `{name}` placeholder 代入，避免在 View 內拼接產品文案。
+- 所有可分階段釋出的功能入口必須由 `application/config/featureFlags.ts` 控制；目前旗標預設開啟，Production 可透過 `EXPO_PUBLIC_FEATURE_*` 環境變數關閉尚未核准的入口。
 
 ## 資安與加密規則
 
@@ -38,49 +51,77 @@ Data / Firebase / external-service adapters
 - 推播只傳遞最低限度資訊；不得放入個資、token、完整任務內容或其他敏感資料，避免其顯示於裝置鎖定畫面。
 - Web 版不持久化敏感資料；若日後要提供長期登入或離線資料，必須先完成獨立的 Web 威脅模型與加密設計。
 
-## 建議專案結構
+## 專案結構（Feature-based）
 
 ```text
-app/                              # Expo Router routes
-  (public)/sign-in.tsx
-  (onboarding)/
-  (app)/
-    index.tsx                     # Home
-    missions/index.tsx
-    missions/[missionId].tsx
-    collection.tsx
-    profile.tsx
+App.tsx                            # Expo entry；目前組裝 root navigation
 
 src/
-  domain/
-    event/                        # Event Engine
-    mission/                      # Mission Engine + Resolver
-    progression/                  # Reward / Rank / Combo
+  application/
+    config/                        # Feature Flags 與 application-level 設定
+    navigation/                    # App shell、Header、底部導覽
+    providers/                     # App-wide providers 與啟動狀態
+    dev/                           # 開發用 Seed Data／Scenario
+
+  features/
+    home/ui/
+    auth/ui/
+    missions/
+      ui/
+      application/                 # 任務結算、提醒 use cases
+      domain/                      # Mission、resolver、提醒規則
+      data/                        # repository contracts、mock fixture
     collection/
-    game-state/
-    shared/
-  application/                    # Auth, saves, missions, notifications use cases
-  data/                           # repository interfaces and Firestore adapters
-  services/                       # Google auth, notifications, clock adapters
-  presentation/                   # components, hooks, Zustand stores, theme
-  config/
+      ui/
+      domain/
+    relationship/
+      ui/
+      application/                 # Onboarding use case
+      domain/                      # 關係與 onboarding rules
+      data/                        # repository contracts
+    actions/
+      ui/
+      data/
 
-functions/src/                    # Firebase Cloud Functions
-  event-generation/
-  mission-resolution/
-  notification-dispatch/
-  shared-domain/
+  game/
+    progression/                   # Game state updates
+    rewards/                       # EXP／Combo／Rank reward
+    rank/                          # Rank identity
+    combo/                         # 未來獨立 Combo policy 的入口
 
-firebase/                         # Firestore rules/indexes
-tests/domain/
-tests/integration/
-tests/e2e/
-docs/
+  content/                         # versioned Content Config
+    missionTemplates.ts             # 任務觸發、獎勵、Rank impact、文案 key
+    gameRules.ts                    # Rank、解鎖與 progression 數值
+    copy/                           # 依功能分割的文案與穩定 key
+
+  shared/
+    ui/                            # 可跨 feature 使用的像素 UI 元件
+    hooks/
+    utils/
+    types/
+    theme/                         # 設計 token
+
+  infrastructure/
+    firebase/                      # Firebase adapters（接入時）
+    auth/                          # Google／Firebase Authentication
+    notifications/                 # Expo notification adapter
+    storage/                       # SecureStore 與 local repository adapter
+
+functions/src/                    # Firebase Cloud Functions（接入時）
+firebase/                         # Firestore rules/indexes（接入時）
+tests/domain/                     # domain 與 game unit tests
 ```
 
-初期可先將 domain 放在 `src/domain`。當 Cloud Functions 必須共用相同規則時，再抽成 workspace package，避免過早引入 monorepo 複雜度。
+當 Cloud Functions 必須共用相同規則時，再將 `features/*/domain` 與 `game/*` 抽成 workspace package，避免過早引入 monorepo 複雜度。
 
 ## Domain responsibilities
+
+### Relationship Dashboard Metrics
+
+- 交往天數以關係開始日為第 1 天計算。
+- 交往紀念日與生日均以每年重複的日曆日期計算下一次 occurrence；當天倒數為 0。
+- 生日已設定時，首頁優先顯示生日倒數；否則顯示交往紀念日倒數。
+- 2 月 29 日在非閏年暫定於 2 月 28 日發生；自訂重要日尚未有 recurrence 設定，不能自行假定為年度重複。
 
 ### Event Engine
 

@@ -6,16 +6,16 @@ import {
   getRankIdentity,
   resolveMission,
   updateGameState,
-} from '../../src/domain/gameplay';
-import type { GameState, Mission } from '../../src/domain/gameplay';
+} from '@/features/missions/domain';
+import type { GameState, Mission } from '@/features/missions/domain';
+import { missionTemplates } from '@/content/missionTemplates';
 
 const mission: Mission = {
   id: 'birthday-dinner',
-  title: '安排生日晚餐',
   importance: 'survival',
   successUntil: new Date('2026-08-15T00:00:00+08:00'),
   failAt: new Date('2026-08-20T00:00:00+08:00'),
-  rewardExp: 20,
+  template: missionTemplates['birthday-dinner'],
 };
 
 const initialState: GameState = {

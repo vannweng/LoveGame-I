@@ -1,0 +1,17 @@
+export const developmentCopy = {
+  DEV_MENU_LABEL: 'DEV',
+  DEV_PREVIEW_LOGIN: 'DEV 預覽模式',
+  DEV_SCENARIO_TITLE: '[DEV SCENARIO]',
+  DEV_SCENARIO_COPY: '切換測試資料，不會寫入正式玩家存檔。',
+  DEV_SCENARIO_CLOSE: '關閉開發情境選單',
+  DEV_SAFE: 'Safe',
+  DEV_BIRTHDAY_D30: 'Birthday D-30',
+  DEV_BIRTHDAY_D5: 'Birthday D-5',
+  DEV_MISSION_SUCCESS: 'Mission Success',
+  DEV_MISSION_LATE: 'Mission Late',
+  DEV_MISSION_FAIL: 'Mission Fail',
+  DEV_RANK_UP: 'Rank Up',
+  DEV_RANK_DOWN: 'Rank Down',
+  DEV_GG: 'GG',
+  DEV_COLLECTION_UNLOCK: 'Collection Unlock',
+} as const;

@@ -1,15 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { MissionReminderService } from '../../src/application/MissionReminderService';
-import type { MissionReminderRepository } from '../../src/data/repositories/MissionReminderRepository';
-import { planMissionReminder } from '../../src/domain/notifications';
-import type { ScheduledMissionReminder } from '../../src/domain/notifications';
-import type { Mission } from '../../src/domain/gameplay';
-import type { MissionNotificationService, NotificationPermission } from '../../src/services/notifications/MissionNotificationService';
+import { MissionReminderService } from '@/features/missions/application/MissionReminderService';
+import type { MissionReminderRepository } from '@/features/missions/data/MissionReminderRepository';
+import { planMissionReminder, type Mission, type ScheduledMissionReminder } from '@/features/missions/domain';
+import type { MissionNotificationService, NotificationPermission } from '@/infrastructure/notifications/MissionNotificationService';
+import { missionTemplates } from '@/content/missionTemplates';
 
 const mission: Mission = {
-  id: 'birthday-dinner', title: '安排生日晚餐', importance: 'survival', rewardExp: 20,
+  id: 'birthday-dinner', importance: 'survival', template: missionTemplates['birthday-dinner'],
   successUntil: new Date('2026-08-15T00:00:00+08:00'),
   failAt: new Date('2026-08-20T00:00:00+08:00'),
 };

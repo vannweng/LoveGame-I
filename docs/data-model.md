@@ -32,6 +32,8 @@ enabled
 nextOccurrenceAt
 ```
 
+目前 App profile 的 relationship start date 與 birthday 都按 `yearly` 計算下一次 occurrence。自訂重要日的 recurrence 欄位尚未提供設定 UI，因此尚未加入首頁倒數計算。
+
 ### MissionTemplate
 
 MVP 先做為 versioned domain catalog，而非 Firestore 可編輯內容。
@@ -108,38 +110,36 @@ Revival
 
 ## Firestore layout
 
+MVP 採 **單一關係存檔**。每一位使用者只使用固定的 `default` save；不提供多關係、封存或切換 save 的 UI。若未來需要多存檔，必須新增 `activeSaveId` 與 migration，不可改變既有 `default` 文件路徑。
+
 ```text
 /users/{userId}
-  displayName, email, photoUrl, activeSaveId, createdAt, updatedAt
+  createdAt, updatedAt
 
 /users/{userId}/devices/{deviceId}
   expoPushToken, nativePushToken?, platform, appVersion, timezone,
   permissionStatus, enabled, lastSeenAt
 
-/saves/{saveId}
-  ownerUserId, partnerDisplayName, relationshipStartDate, timezone,
-  status, rulesetVersion, createdAt, updatedAt
+/users/{userId}/saves/default
+  ownerUserId, timezone, schemaVersion, createdAt, updatedAt
 
-/saves/{saveId}/importantDates/{importantDateId}
-  ...ImportantDate
+/users/{userId}/saves/default/profile/current
+  partnerNickname, relationshipStartDate, birthday?, customImportantDates, updatedAt
 
-/saves/{saveId}/missions/{missionId}
+/users/{userId}/saves/default/onboarding/state
+  status, profile, tutorialReward, updatedAt
+
+/users/{userId}/saves/default/missions/{missionId}
   ...Mission
 
-/saves/{saveId}/resolutions/{resolutionId}
+/users/{userId}/saves/default/resolutions/{resolutionId}
   ...MissionResolution
 
-/saves/{saveId}/state/progression
+/users/{userId}/saves/default/state/progression
   ...Progression
 
-/saves/{saveId}/unlocks/{itemId}
-  category, unlockedAt, sourceResolutionId?
-
-/saves/{saveId}/revivals/{revivalId}
-  ...Revival
-
-/saves/{saveId}/notificationPreferences/default
-  enabled, quietHours, reminderOffsets, timezone
+/users/{userId}/saves/default/state/collection
+  items, graves, updatedAt
 
 /notificationJobs/{jobId}       # Cloud Functions / Admin SDK only
   userId, saveId, missionId, scheduledAt, type, status, attempts,

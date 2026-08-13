@@ -1,0 +1,70 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isDefaultSave(saveId) {
+      return saveId == 'default';
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update, delete: if false;
+
+      match /saves/{saveId} {
+        allow read: if isOwner(userId) && isDefaultSave(saveId);
+        allow create: if isOwner(userId) && isDefaultSave(saveId)
+          && request.resource.data.ownerUserId == userId
+          && request.resource.data.schemaVersion == 1;
+        allow update: if isOwner(userId) && isDefaultSave(saveId)
+          && request.resource.data.ownerUserId == resource.data.ownerUserId
+          && request.resource.data.schemaVersion == resource.data.schemaVersion;
+        allow delete: if false;
+
+        match /profile/current {
+          allow read, create, update: if isOwner(userId) && isDefaultSave(saveId);
+          allow delete: if false;
+        }
+
+        match /onboarding/state {
+          allow read: if isOwner(userId) && isDefaultSave(saveId);
+          allow create, update: if isOwner(userId) && isDefaultSave(saveId)
+            && request.resource.data.tutorialReward == null;
+          allow delete: if false;
+        }
+
+        match /missions/{missionId} {
+          allow read: if isOwner(userId) && isDefaultSave(saveId);
+          allow write: if false;
+        }
+
+        match /resolutions/{resolutionId} {
+          allow read: if isOwner(userId) && isDefaultSave(saveId);
+          allow write: if false;
+        }
+
+        match /state/progression {
+          allow read: if isOwner(userId) && isDefaultSave(saveId);
+          allow write: if false;
+        }
+
+        match /state/collection {
+          allow read: if isOwner(userId) && isDefaultSave(saveId);
+          allow write: if false;
+        }
+
+        match /notificationPreferences/default {
+          allow read, create, update: if isOwner(userId) && isDefaultSave(saveId);
+          allow delete: if false;
+        }
+      }
+    }
+
+    match /notificationJobs/{jobId} {
+      allow read, write: if false;
+    }
+  }
+}
