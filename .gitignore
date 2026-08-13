@@ -1,0 +1,50 @@
+# Dependencies and generated output
+node_modules/
+.expo/
+dist/
+
+# Local environment configuration. Commit only a redacted .env.example if needed.
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Firebase and Google Cloud credentials/configuration
+google-services.json
+GoogleService-Info.plist
+firebase-adminsdk-*.json
+*service-account*.json
+serviceAccountKey.json
+.firebaserc.local
+
+# EAS, Expo, Android, and iOS signing credentials
+credentials.json
+credentials.*.json
+*.keystore
+*.jks
+*.p12
+*.p8
+*.mobileprovision
+*.cer
+*.der
+*.key
+*.pem
+
+# Private keys, certificates, tokens, and secret exports
+*.crt
+*.csr
+id_rsa
+id_ed25519
+*.token
+*.secrets
+secrets/
+private/
+
+# Local data, personal-data exports, backups, and diagnostics
+backups/
+exports/
+local-data/
+*.sqlite
+*.sqlite3
+*.db
+*.log
