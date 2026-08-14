@@ -2,10 +2,32 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { getFirestore, Timestamp } from '../../functions/node_modules/firebase-admin/lib/firestore/index.js';
-import { resolveMission } from '../../functions/src/index.js';
+import { createMission, resolveMission } from '../../functions/src/index.js';
 const db = getFirestore();
 
 let sequence = 0;
+
+test('createMission derives a birthday mission from the server profile and deduplicates it', async () => {
+  const userId = `create-test-${Date.now()}-${sequence += 1}`;
+  const save = db.doc(`users/${userId}/saves/default`);
+  await save.set({ ownerUserId: userId, schemaVersion: 1, timezone: 'Asia/Taipei' });
+  await save.collection('profile').doc('current').set({ birthday: '2026-12-30', partnerNickname: 'P2' });
+
+  const first = await createMission.run(callCreateAs(userId, 'birthday-dinner'));
+  const second = await createMission.run(callCreateAs(userId, 'birthday-dinner'));
+  const mission = await save.collection('missions').doc(first.missionId).get();
+
+  assert.equal(first.created, true);
+  assert.equal(second.created, false);
+  assert.equal(second.missionId, first.missionId);
+  assert.equal(mission.data()?.template.id, 'birthday-dinner');
+  assert.equal(mission.data()?.sourceImportantDateId, 'birthday');
+  assert.match(mission.data()?.generationKey, /^birthday-dinner:\d{4}$/);
+});
+
+test('createMission rejects an unapproved template', async () => {
+  await assert.rejects(createMission.run(callCreateAs('any-user', 'client-supplied-reward')), { code: 'invalid-argument' });
+});
 
 test('success resolves atomically and unlocks applicable collection items', async () => {
   const { missionRef, paths, userId } = await seedMission({
@@ -115,4 +137,8 @@ function missionTemplate() {
 
 function callAs(userId: string, missionId: string): Parameters<typeof resolveMission.run>[0] {
   return { auth: { uid: userId }, data: { missionId } } as unknown as Parameters<typeof resolveMission.run>[0];
+}
+
+function callCreateAs(userId: string, templateId: string): Parameters<typeof createMission.run>[0] {
+  return { auth: { uid: userId }, data: { templateId } } as unknown as Parameters<typeof createMission.run>[0];
 }

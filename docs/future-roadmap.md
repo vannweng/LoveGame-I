@@ -7,9 +7,9 @@
 | 項目 | 選擇 | 狀態 |
 | --- | --- | --- |
 | Repository／資料庫 | 1A：依 feature 建立完整 repository contract，再加入 Local 與 Firestore adapter | 進行中：contracts、Local + Firestore adapters 已完成；等待 3A Rules 後切換 composition |
-| `mission_create` Analytics | 2A：於 `MissionGenerationService` 真正建立任務成功後送出 | 待開始 |
+| `mission_create` Analytics | 2A：於 `MissionGenerationService` 真正建立任務成功後送出 | 已完成：`created === true` 才送安全參數 |
 | 正式 Analytics | 3A：Firebase Analytics adapter | 待 Firebase 正式接入 |
-| UI primitives | 4A：高頻 MVP 元件組 | 待開始 |
+| UI primitives | 4A：高頻 MVP 元件組 | 進行中：共用 primitive 已建立，既有任務畫面逐步導入 |
 
 ## 正式 MVP 實作選擇與順序
 
@@ -22,14 +22,16 @@
 | 2 | 2A | Feature 分拆 Firestore repositories |
 | 3 | 3A | Owner-only Firestore Security Rules + Emulator 自動測試 |
 | 4 | 4A | Callable Cloud Function + Firestore transaction 結算任務 |
-| 5 | 5A | Cloud Function + Expo Push API 遠端推播 |
+| 5 | 5A | Cloud Function + Expo Push API 遠端推播（目前受 Spark 限制） |
 | 6 | 6B | 先使用 Expo Go 作為日常開發測試 |
 
 > **6B 限制：** Expo Go 可驗證 UI、Domain 規則與一般互動，但不能作為 Google 原生登入、推播、SecureStore 行為、deep link 或正式 Android 簽署的驗收環境。上述原生能力在公開 Beta／上架前仍必須補一次 EAS Development Build 或 Android internal build 驗證。
 
 > **3A 目前狀態：** owner-only Rules 與 Emulator tests 已建立且實跑通過（4 tests）。Firebase CLI 需要 JDK 21 以上；目前已以隔離的 Temurin JDK 21 驗證測試，但此 Mac 尚未完成永久系統安裝（需要管理員密碼）。開發機需持續保有 JDK 21 以便日後執行 `npm run test:firestore-rules`。
 
-> **4A 目前狀態：** 已建立 `resolveMission` Callable Cloud Function。它在 Admin SDK 的單一 Firestore transaction 中讀取任務、計算 success／late／fail，並原子寫入 mission、resolution、progression、collection。已補 Firestore Emulator 的 server transaction tests（success、late、fail、重複結算與跨帳號）。client 仍維持 Local／Mock；待任務建立 Function、完整 Callable endpoint 測試與部署設定完成後才切換。
+> **4A 目前狀態：** 已建立 `createMission` 與 `resolveMission` Callable Cloud Functions。前者只接受白名單 `templateId`，從 server profile 取得生日、依存檔時區產生期限與規則快照，且以模板／年度去重；後者在單一 Admin SDK transaction 中結算 mission、resolution、progression、collection，並禁止任務開放前結算。已補 Firestore Emulator server transaction tests。client 的 `MissionRepository` 已改為唯讀；正式建立一律經 `CallableMissionGenerationService` 請求。
+
+> **部署準備狀態：** 已建立 `dev` Firebase alias（`lovegame-i-dev`）與只部署兩個任務 Function 的指令。目前專案為 Spark，無法部署 Cloud Functions；升級 Blaze、設定帳單預算警示與啟用 App Check 後，才可部署並進行遠端推播，詳見 `docs/functions-deployment.md`。
 
 ## 資安與上線前不可延後事項
 
@@ -41,6 +43,7 @@
 | Server-side mission resolution | 若 client 可直接寫 EXP、Combo、Rank、解鎖或 GG，使用者可竄改遊戲結果；日後清理作弊資料成本很高 | 發布任務完成功能前 |
 | 資料 schema version + migration | relationship、mission、progression 文件一旦有正式資料，欄位重命名／拆分將需要 migration | 第一版 Firestore schema 建立時 |
 | Firebase App Check + API key restrictions | Firebase Web config 不是秘密；若缺少 App Check／限制，服務可能被非官方 client 濫用 | 公開 Beta 前 |
+| **Blaze 方案 + 預算警示 + App Check** | Cloud Functions 與 server push 無法在 Spark 部署；未設預算警示可能產生未預期費用，未啟用 App Check 則增加非官方 client 濫用風險 | **部署任一 Cloud Function／遠端推播前（必修 gate）** |
 | Analytics 資料最小化 | 一旦上傳姓名、email、完整日期、內容或位置，既有 Analytics 資料通常無法可靠刪除或回收 | Firebase Analytics adapter 上線前 |
 | Push Token／通知內容 | Token 屬裝置識別資料；鎖定畫面通知若含任務內容或個資，無法由 App 控制誰看見 | 遠端推播接入前 |
 | OAuth Client ID 與 Android SHA 指紋 | Google 登入需要正式 package name、SHA-1／SHA-256 與 redirect 設定；上架後變更會造成登入失敗並需重新發版 | EAS Development Build 前，Production build 前再次核對 |
@@ -67,11 +70,12 @@ RelationshipRepository
 ├ getProfile(userId)
 └ saveProfile(userId, profile)
 
-MissionRepository
+MissionRepository (read only)
 ├ getActiveMissions(userId)
-├ createMission(input)
-├ getMission(userId, missionId)
-└ saveResolution(userId, resolution)
+└ getMission(userId, missionId)
+
+MissionGenerationService
+└ create(templateId) → Callable Function
 
 ProgressionRepository
 ├ getGameState(userId)
@@ -122,7 +126,7 @@ Important Date / 使用者建立事件
         ↓
 MissionGenerationService
         ↓
-MissionRepository.createMission()
+createMission Callable Function
         ↓
 成功寫入後 → AnalyticsService.track('mission_create')
 ```
@@ -150,11 +154,11 @@ MissionRepository.createMission()
 
 - `mission_id` 必須是不可預測的 generated ID，不能含 user ID、伴侶名稱、完整日期或任務文案。
 - client 僅能提出建立請求；正式版的期限、difficulty、reward、source 與 template version 應由可信任規則產生並寫入快照，避免日後 Content Config 變動改寫歷史任務意義。
-- 後端成熟後應升級為 Cloud Function server-side generation（既定升級方向），以防多裝置重試重複建立。
+- `createMission` 已由 Cloud Function 產生；現階段僅開放 `birthday-dinner`，並以 `templateId:targetYear` 去重。後續新模板必須先加到 server Content Config，不能讓 client 自帶 reward、期限或文案。
 
 ### 後續升級
 
-後端成熟後，改由 Cloud Function 在 server 端建立任務並送出 `mission_create`，避免多裝置或重試造成重複。
+`createMissionAndTrack` 已在 Application layer 實作：僅於 `created === true` 時送出 `mission_create`；去重命中或失敗時不得送出事件。正式 Firebase Analytics adapter 接入前，事件仍由 Development adapter 處理。
 
 ## Phase 3 — Firebase Analytics adapter
 
@@ -233,6 +237,8 @@ Google Analytics → 探索 → 漏斗探索：
 
 ### 遠端推播不可延後事項
 
+- **必修 gate：** 在部署任何遠端推播派送 Function 前，必須依序完成 **Blaze 方案啟用、帳單預算與警示設定、Firebase App Check 啟用與驗證**。Spark 無法部署 Cloud Functions；未設預算警示可能產生未預期費用，而未啟用 App Check 會讓 token 註冊與推播 API 更容易遭非官方 client 濫用。
+- 在上述 gate 完成前，只能使用目前的本機通知；不得為求快速上線改成 client 直接寫入裝置 token、直接呼叫 Expo Push API，或直接建立 `notificationJobs`。
 - Expo Push Token 必須和使用者、裝置、有效狀態分開儲存；登出、token 失效與刪帳時要撤銷／刪除。
 - 推播內容只顯示最低限度提醒，禁止包含任務文案、伴侶姓名、完整日期、備註或其他鎖定畫面可見個資。
 - 通知 job 的建立與派送由 server 管理；client 本機排程只能作為輔助，不是任務結果的權威來源。

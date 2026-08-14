@@ -20,9 +20,11 @@ Rules 檔案位於 `firebase/firestore.rules`，MVP 使用單一存檔路徑：
 | `state/collection` | 僅本人讀取；client 不可寫入 |
 | `notificationJobs/*` | client 一律禁止 |
 
-Mission、resolution、progression、collection 的寫入由 `resolveMission` Callable Cloud Function／Admin SDK transaction 處理；Admin SDK 不受 Firestore Rules 限制，因此 Cloud Functions 仍需以 IAM、輸入驗證與 transaction 保障安全。
+Mission、resolution、progression、collection 的寫入由 Callable Cloud Functions／Admin SDK transaction 處理；Admin SDK 不受 Firestore Rules 限制，因此 Cloud Functions 仍需以 IAM、輸入驗證與 transaction 保障安全。
 
-`resolveMission` 只接受已登入使用者的 `missionId`，固定從該使用者的 `/users/{uid}/saves/default` 讀寫，並以 `resolutions/{missionId}` 防止同一任務重複結算。它尚未部署或接入 UI；公開 Beta 前仍必須補 Function Emulator 的成功、逾期、失敗、重送與跨使用者整合測試，並啟用 App Check。
+`createMission` 只接受已登入使用者的白名單 `templateId`，從 `/users/{uid}/saves/default/profile/current` 取得事件日期；client 不可傳送日期、期限、規則或獎勵。它以模板／目標年度去重，避免重試或變更生日後重複生成當年度任務。
+
+`resolveMission` 只接受已登入使用者的 `missionId`，固定從該使用者的 `/users/{uid}/saves/default` 讀寫，並以 `resolutions/{missionId}` 防止同一任務重複結算，且不允許在 `opensAt` 前結算。兩個 Function 尚未部署或接入 UI；公開 Beta 前仍必須補完整 Callable endpoint 測試並啟用 App Check。
 
 ## Emulator 測試
 

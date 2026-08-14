@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "demo-lovegame-i"
+    "default": "demo-lovegame-i",
+    "dev": "lovegame-i-dev"
   }
 }

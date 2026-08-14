@@ -14,6 +14,12 @@
       "expo-notifications",
       "expo-secure-store",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "70e3b2c0-226b-4b5d-b147-8218117fe26d"
+      }
+    },
+    "owner": "vannwengs-team"
   }
 }

@@ -1,0 +1,40 @@
+# EAS build archives only need app source and native configuration.
+node_modules/
+.expo/
+dist/
+functions/node_modules/
+
+# Local configuration, secrets, and credentials.
+.env
+.env.*
+!.env.example
+!.env.*.example
+google-services.json
+GoogleService-Info.plist
+firebase-adminsdk-*.json
+*service-account*.json
+serviceAccountKey.json
+credentials.json
+credentials.*.json
+*.keystore
+*.jks
+*.p12
+*.p8
+*.mobileprovision
+*.cer
+*.der
+*.key
+*.pem
+*.token
+*.secrets
+secrets/
+private/
+
+# Local data and diagnostics.
+backups/
+exports/
+local-data/
+*.sqlite
+*.sqlite3
+*.db
+*.log

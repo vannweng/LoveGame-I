@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/domain/*.test.ts",
     "test:firestore-rules": "firebase emulators:exec --only firestore \"tsx --test tests/firestore/*.test.ts\"",
-    "test:mission-resolution": "firebase emulators:exec --only firestore \"tsx --test tests/functions/*.test.ts\""
+    "test:mission-resolution": "firebase emulators:exec --only firestore \"tsx --test tests/functions/*.test.ts\"",
+    "deploy:functions:dev": "firebase deploy --only functions:createMission,functions:resolveMission --project dev"
   },
   "dependencies": {
     "@expo-google-fonts/dotgothic16": "^0.4.1",
@@ -19,6 +20,7 @@
     "expo": "~54.0.0",
     "expo-auth-session": "~7.0.11",
     "expo-crypto": "~15.0.9",
+    "expo-dev-client": "~6.0.21",
     "expo-font": "~14.0.12",
     "expo-notifications": "~0.32.17",
     "expo-secure-store": "~15.0.8",

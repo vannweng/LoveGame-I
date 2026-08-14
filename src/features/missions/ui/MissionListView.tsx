@@ -3,8 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { Mission } from '@/features/missions/domain';
 import { getCopy } from '@/content';
 import { AppButton } from '@/shared/ui/AppButton';
-import { PixelCard } from '@/shared/ui/PixelCard';
-import { PixelTag } from '@/shared/ui/PixelTag';
+import { MissionCard } from '@/shared/ui/MissionCard';
 import { PageLayout } from '@/shared/ui/PageLayout';
 import { colors, fonts, typography } from '@/shared/theme/tokens';
 
@@ -22,11 +21,15 @@ export function MissionListView({
   return (
     <PageLayout>
       <Text style={styles.eyebrow}>{getCopy('MISSION_LIST_EYEBROW')}</Text>
-      <PixelCard accentColor={colors.orange} title={getCopy('MISSION_LIST_TITLE')} subtitle={getCopy('MISSION_LIST_SUBTITLE')} trailing={<PixelTag color={colors.orange} label={getCopy('MISSION_LIST_STAGE')} />}>
-        <Text style={styles.missionTitle}>{getCopy(mission.template.titleKey)}</Text>
-        <Text style={styles.meta}>{getCopy('MISSION_EVENT_REWARD', { eventType: mission.template.eventType.toUpperCase(), exp: mission.template.reward.success.expDelta })}</Text>
-        <AppButton label={getCopy('MISSION_VIEW_DETAIL')} onPress={onOpenMission} />
-      </PixelCard>
+      <MissionCard
+        actionLabel={getCopy('MISSION_VIEW_DETAIL')}
+        dueLabel={getCopy(mission.template.titleKey)}
+        onPress={onOpenMission}
+        rewardLabel={getCopy('MISSION_EVENT_REWARD', { eventType: mission.template.eventType.toUpperCase(), exp: mission.template.reward.success.expDelta })}
+        status={{ label: getCopy('MISSION_LIST_STAGE'), variant: 'active' }}
+        subtitle={getCopy('MISSION_LIST_SUBTITLE')}
+        title={getCopy('MISSION_LIST_TITLE')}
+      />
       <View style={styles.fill} />
       <AppButton label={getCopy('MISSION_BACK_HOME')} onPress={onBack} secondary />
     </PageLayout>
@@ -35,7 +38,5 @@ export function MissionListView({
 
 const styles = StyleSheet.create({
   eyebrow: { color: colors.accent, fontFamily: fonts.number, fontSize: typography.micro, letterSpacing: 1 },
-  missionTitle: { color: colors.text, fontFamily: fonts.body, fontSize: typography.cardTitle, fontWeight: '700' },
-  meta: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.caption, lineHeight: 20 },
   fill: { flex: 1 },
 });
