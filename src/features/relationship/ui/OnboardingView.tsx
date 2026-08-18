@@ -58,7 +58,7 @@ function ProfileStep({ onSave }: { onSave: (profile: RelationshipProfile) => voi
   const canContinue = partnerNickname.trim().length > 0 && relationshipStartDate.trim().length > 0;
   const addCustomDate = () => {
     if (!customTitle.trim() || !customDate.trim()) return;
-    setCustomImportantDates([...customImportantDates, { title: customTitle.trim(), date: customDate.trim() }]);
+    setCustomImportantDates([...customImportantDates, { title: customTitle.trim(), date: customDate.trim(), recurrence: 'yearly', importance: 'survival' }]);
     setCustomTitle('');
     setCustomDate('');
   };
@@ -67,7 +67,7 @@ function ProfileStep({ onSave }: { onSave: (profile: RelationshipProfile) => voi
     relationshipStartDate: relationshipStartDate.trim(),
     birthday: birthday.trim() || undefined,
     customImportantDates: customTitle.trim() && customDate.trim()
-      ? [...customImportantDates, { title: customTitle.trim(), date: customDate.trim() }]
+      ? [...customImportantDates, { title: customTitle.trim(), date: customDate.trim(), recurrence: 'yearly', importance: 'survival' }]
       : customImportantDates,
   });
 

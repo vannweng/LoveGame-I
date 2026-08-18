@@ -4,6 +4,7 @@ export const developmentCopy = {
   DEV_SCENARIO_TITLE: '[DEV SCENARIO]',
   DEV_SCENARIO_COPY: '切換測試資料，不會寫入正式玩家存檔。',
   DEV_SCENARIO_CLOSE: '關閉開發情境選單',
+  DEV_RESET_TODAY: '回復今日初始狀態',
   DEV_SAFE: 'Safe',
   DEV_BIRTHDAY_D30: 'Birthday D-30',
   DEV_BIRTHDAY_D5: 'Birthday D-5',
@@ -14,4 +15,10 @@ export const developmentCopy = {
   DEV_RANK_DOWN: 'Rank Down',
   DEV_GG: 'GG',
   DEV_COLLECTION_UNLOCK: 'Collection Unlock',
+  DEV_MISSION_ACCEPTED: 'Mission Accepted',
+  DEV_MISSION_REPORTING: 'Mission Reporting',
+  DEV_FREE_ACTION: 'Free Action',
+  DEV_NEXT_HOOK: 'Next Hook',
+  DEV_WEEKDAY: 'Weekday（平日）',
+  DEV_WEEKEND: 'Weekend（週末）',
 } as const;

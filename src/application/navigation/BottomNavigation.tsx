@@ -19,8 +19,8 @@ export function BottomNavigation({ activeTab, flags, onSelect }: { activeTab: Bo
 
 const styles = StyleSheet.create({
   nav: { backgroundColor: colors.pageBg, borderTopColor: colors.border, borderTopWidth: borderWidth, flexDirection: 'row', justifyContent: 'space-around', paddingBottom: spacing.sm, paddingTop: spacing.xs },
-  item: { alignItems: 'center', gap: 2, minWidth: 48, paddingVertical: spacing.xs },
+  item: { alignItems: 'center', flex: 1, gap: 2, minWidth: 0, paddingVertical: spacing.xs },
   icon: { color: colors.textMuted, fontFamily: fonts.number, fontSize: typography.body },
-  label: { color: colors.textMuted, fontFamily: fonts.number, fontSize: typography.micro },
+  label: { color: colors.textMuted, fontFamily: fonts.number, fontSize: typography.micro, textAlign: 'center' },
   active: { color: colors.accent },
 });

@@ -5,11 +5,9 @@ import { Platform } from 'react-native';
 const options: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
 };
-const webSessionStorage = new Map<string, string>();
-
 export const secureStorage = {
   async getItem(key: string): Promise<string | null> {
-    if (Platform.OS === 'web') return webSessionStorage.get(key) ?? null;
+    if (Platform.OS === 'web') return AsyncStorage.getItem(key);
 
     const encryptedValue = await SecureStore.getItemAsync(key, options);
     if (encryptedValue !== null) return encryptedValue;
@@ -19,7 +17,7 @@ export const secureStorage = {
 
   async setItem(key: string, value: string): Promise<void> {
     if (Platform.OS === 'web') {
-      webSessionStorage.set(key, value);
+      await AsyncStorage.setItem(key, value);
       return;
     }
 
@@ -29,7 +27,7 @@ export const secureStorage = {
 
   async removeItem(key: string): Promise<void> {
     if (Platform.OS === 'web') {
-      webSessionStorage.delete(key);
+      await AsyncStorage.removeItem(key);
       return;
     }
 

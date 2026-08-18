@@ -1,12 +1,23 @@
 import { gameRules, missionTemplates } from '@/content';
 import type { CollectionState } from '@/features/collection/domain';
+import { createDailyGameplayState, transitionDailyGameplay, type DailyGameplayState } from '@/features/dailyGameplay/domain';
 import type { GameplaySession } from '@/features/missions/data/GameplayRepository';
 import type { Mission } from '@/features/missions/domain';
 import type { OnboardingState } from '@/features/relationship/domain';
+import { createActivityBoardState, type ActivityBoardState } from '@/features/activities/domain';
+import { dailyActivityTemplates, weeklyChallengeTemplates } from '@/content/dailyActivities';
+import { createRunHistory, recordRunResolution } from '@/game/run';
+
+export type DevDatePreset = 'weekday' | 'saturday' | 'sunday' | 'day100';
+export type DevImportantPreset = 'none' | 'birthday-d30' | 'birthday-d5' | 'birthday-d1';
+export type DevCardProgress = 'initial' | 'done1' | 'done2' | 'done3';
+export interface DevScenarioConfiguration { date: DevDatePreset; important: DevImportantPreset; daily: DevCardProgress; weekly: DevCardProgress; }
+export const defaultDevScenarioConfiguration: DevScenarioConfiguration = { date: 'weekday', important: 'none', daily: 'initial', weekly: 'initial' };
 
 export type DevelopmentScenario =
   | 'safe' | 'birthday-d30' | 'birthday-d5' | 'mission-success' | 'mission-late'
-  | 'mission-fail' | 'rank-up' | 'rank-down' | 'gg' | 'collection-unlock';
+  | 'mission-fail' | 'rank-up' | 'rank-down' | 'gg' | 'collection-unlock'
+  | 'mission-accepted' | 'mission-reporting' | 'free-action' | 'next-hook' | 'weekday' | 'weekend';
 
 export const developmentScenarios: { id: DevelopmentScenario; labelKey: string }[] = [
   { id: 'safe', labelKey: 'DEV_SAFE' }, { id: 'birthday-d30', labelKey: 'DEV_BIRTHDAY_D30' },
@@ -14,15 +25,73 @@ export const developmentScenarios: { id: DevelopmentScenario; labelKey: string }
   { id: 'mission-late', labelKey: 'DEV_MISSION_LATE' }, { id: 'mission-fail', labelKey: 'DEV_MISSION_FAIL' },
   { id: 'rank-up', labelKey: 'DEV_RANK_UP' }, { id: 'rank-down', labelKey: 'DEV_RANK_DOWN' },
   { id: 'gg', labelKey: 'DEV_GG' }, { id: 'collection-unlock', labelKey: 'DEV_COLLECTION_UNLOCK' },
+  { id: 'mission-accepted', labelKey: 'DEV_MISSION_ACCEPTED' }, { id: 'mission-reporting', labelKey: 'DEV_MISSION_REPORTING' },
+  { id: 'free-action', labelKey: 'DEV_FREE_ACTION' }, { id: 'next-hook', labelKey: 'DEV_NEXT_HOOK' },
+  { id: 'weekday', labelKey: 'DEV_WEEKDAY' }, { id: 'weekend', labelKey: 'DEV_WEEKEND' },
 ];
+
+export function getDevelopmentNow(scenario: DevelopmentScenario): Date | null {
+  if (scenario === 'weekday') return new Date('2026-08-17T12:00:00+08:00');
+  if (scenario === 'weekend') return new Date('2026-08-15T12:00:00+08:00');
+  return null;
+}
+
+export function getConfiguredDevelopmentNow(preset: DevDatePreset): Date {
+  if (preset === 'saturday') return new Date('2026-08-15T12:00:00+08:00');
+  if (preset === 'sunday') return new Date('2026-08-16T12:00:00+08:00');
+  if (preset === 'day100') return new Date('2026-08-17T12:00:00+08:00');
+  return new Date('2026-08-17T12:00:00+08:00');
+}
+
+export function createConfiguredOnboarding(config: DevScenarioConfiguration, now: Date): OnboardingState {
+  const offset = config.important === 'birthday-d30' ? 30 : config.important === 'birthday-d5' ? 5 : config.important === 'birthday-d1' ? 1 : 90;
+  const relationshipStartDate = config.date === 'day100' ? localDateAtOffset(now, -99) : localDateAtOffset(now, -365);
+  return { status: 'completed', tutorialReward: null, profile: { partnerNickname: 'P2', relationshipStartDate, birthday: localDateAtOffset(now, offset), customImportantDates: [] } };
+}
+
+export function createConfiguredDailyGameplay(config: DevScenarioConfiguration): DailyGameplayState {
+  return createDailyGameplayState(config.important !== 'none', 'combo-five', 'check-in');
+}
+
+export function createConfiguredActivityBoard(config: DevScenarioConfiguration, now: Date): ActivityBoardState {
+  const state = createActivityBoardState(now);
+  const dailyIds = dailyActivityTemplates.slice(0, 3).map((template) => template.id);
+  const weeklyIds = weeklyChallengeTemplates.slice(0, 3).map((template) => template.id);
+  return {
+    ...state,
+    daily: { ...state.daily, deckTemplateIds: dailyIds, completedTemplateIds: completedIds(dailyIds, config.daily) },
+    weekly: { ...state.weekly, deckTemplateIds: weeklyIds, completedTemplateIds: completedIds(weeklyIds, config.weekly) },
+  };
+}
+
+function completedIds(ids: string[], progress: DevCardProgress): string[] {
+  return ids.slice(0, progress === 'done3' ? 3 : progress === 'done2' ? 2 : progress === 'done1' ? 1 : 0);
+}
+
+export function createDevelopmentDailyGameplay(scenario: DevelopmentScenario): DailyGameplayState {
+  let state = createDailyGameplayState(!['safe', 'free-action', 'weekday', 'weekend'].includes(scenario), 'combo-five', 'check-in');
+  if (scenario === 'mission-accepted') state = transitionDailyGameplay(state, 'accept');
+  if (scenario === 'mission-reporting') {
+    state = transitionDailyGameplay(state, 'accept');
+    state = transitionDailyGameplay(state, 'beginAction');
+    state = transitionDailyGameplay(state, 'openReport');
+  }
+  if (scenario === 'next-hook') state = transitionDailyGameplay(createDailyGameplayState(false, 'combo-five', 'check-in'), 'completeSafeAction');
+  return state;
+}
 
 export function createDevelopmentSession(scenario: DevelopmentScenario, now = new Date()): GameplaySession {
   const score = scoreForScenario(scenario);
+  const mission = createMission(now);
+  const runHistory = score === -10
+    ? recordRunResolution(createRunHistory(now, -9), { deathCause: mission.template.titleKey, occurredAt: now, result: 'fail', rankScore: -10 })
+    : createRunHistory(now, score);
   return {
     relationship: { id: 'dev-relationship', ownerUserId: 'dev-user', partnerDisplayName: 'P2', timezone: 'Asia/Taipei' },
-    mission: createMission(now),
-    gameState: { exp: scenario === 'mission-success' ? 60 : 40, combo: comboForScenario(scenario), rankScore: score, status: score >= 1 ? 'safe' : 'danger' },
+    mission,
+    gameState: { exp: scenario === 'mission-success' ? 60 : 40, combo: comboForScenario(scenario), rankScore: score, status: score === -10 ? 'gg' : score >= 1 ? 'safe' : 'danger' },
     collectionState: collectionForScenario(scenario, now),
+    runHistory,
   };
 }
 

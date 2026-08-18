@@ -24,10 +24,10 @@ export function AppButton({ label, onPress, secondary = false, disabled = false,
 }
 
 const styles = StyleSheet.create({
-  button: { alignItems: 'center', backgroundColor: colors.accent, borderColor: colors.accent, borderRadius: radius.xs, borderWidth, minHeight: 40, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
+  button: { alignItems: 'center', backgroundColor: colors.accent, borderColor: colors.accent, borderRadius: radius.xs, borderWidth, maxWidth: '100%', minHeight: 40, minWidth: 0, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   smallButton: { minHeight: 32, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
   secondaryButton: { backgroundColor: 'transparent', borderColor: colors.accent },
-  label: { color: colors.ink, fontFamily: fonts.body, fontSize: typography.caption, fontWeight: '700' },
+  label: { color: colors.ink, flexShrink: 1, fontFamily: fonts.body, fontSize: typography.caption, fontWeight: '700', textAlign: 'center' },
   smallLabel: { fontFamily: fonts.number, fontSize: typography.tag },
   secondaryLabel: { color: colors.accent },
   disabled: { opacity: 0.45 },

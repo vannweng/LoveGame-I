@@ -25,8 +25,8 @@ saveId
 type: relationship_anniversary | marriage_anniversary | birthday | custom
 title
 dateSpec                     # calendar-date / yearly recurrence semantics
-recurrence: yearly | none
-importance: survival | normal
+  recurrence: yearly              # 自訂重要日 MVP 預設每年重複
+  importance: survival | normal   # MVP 預設 survival，玩家可覆寫為 normal
 importanceSource: template_default | player_override
 enabled
 nextOccurrenceAt
@@ -97,13 +97,18 @@ Progression
   activeRevivalId?
   version
 
+RunHistory
+  activeRun?                    # startedAt, highestRank, success/late/fail counts
+  completedRuns[]               # endedAt, deathCause, oath?, same aggregate stats
+
 Revival
   id
   triggerResolutionId
   revivalMissionId
-  status: available | started | completed
+  status: available | completed
   rankBefore
   rankAfter
+  oath                          # required player text
   startedAt
   completedAt?
 ```

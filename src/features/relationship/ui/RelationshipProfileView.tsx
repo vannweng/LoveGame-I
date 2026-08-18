@@ -1,47 +1,78 @@
-import { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import type { ReactNode } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { mockRelationshipSections } from '@/features/actions/data/mockAppShellData';
 import { getCopy } from '@/content';
 import type { RelationshipProfile } from '@/features/relationship/domain';
-import { PageLayout } from '@/shared/ui/PageLayout';
-import { AppButton } from '@/shared/ui/AppButton';
 import { PixelCard } from '@/shared/ui/PixelCard';
 import { PixelTag } from '@/shared/ui/PixelTag';
-import { borderWidth, colors, fonts, radius, spacing, typography } from '@/shared/theme/tokens';
-import { formatLocalDateInput } from '@/shared/utils/formatLocalDateInput';
+import { PageLayout } from '@/shared/ui/PageLayout';
+import { colors, fonts, spacing, typography } from '@/shared/theme/tokens';
 
-export function RelationshipProfileView({ profile }: { profile: RelationshipProfile | null }) {
-  const basic = profile ? `${profile.partnerNickname} · ${profile.relationshipStartDate}` : getCopy('RELATIONSHIP_NO_PROFILE');
-  return <PageLayout><Text style={styles.eyebrow}>{getCopy('RELATIONSHIP_EYEBROW')}</Text><PixelCard accentColor={colors.pink} title={getCopy('RELATIONSHIP_TITLE')} subtitle={getCopy('RELATIONSHIP_SUBTITLE')} trailing={<PixelTag color={colors.pink} label={getCopy('RELATIONSHIP_P2_LINK')} />}><Text style={styles.heroText}>{basic}</Text></PixelCard>{mockRelationshipSections.map((section) => <PixelCard key={section.title} title={section.title} subtitle={getCopy('RELATIONSHIP_PROFILE_DATA')}><Text style={styles.copy}>{section.title === getCopy('PROFILE_SECTION_BASIC') ? basic : section.copy}</Text></PixelCard>)}</PageLayout>;
-}
+export type RelationshipEditor = 'basic' | 'dates' | 'preferences';
 
-interface RelationshipSettingsViewProps {
+interface RelationshipProfileViewProps {
   profile: RelationshipProfile | null;
-  onCancel: () => void;
-  onSave: (profile: RelationshipProfile) => void;
+  userName: string;
+  onOpenEditor: (editor: RelationshipEditor) => void;
 }
 
-export function RelationshipSettingsView({ profile, onCancel, onSave }: RelationshipSettingsViewProps) {
-  const [partnerNickname, setPartnerNickname] = useState(profile?.partnerNickname ?? '');
-  const [relationshipStartDate, setRelationshipStartDate] = useState(profile?.relationshipStartDate ?? '');
-  const [birthday, setBirthday] = useState(profile?.birthday ?? '');
-  const [dates, setDates] = useState(profile?.customImportantDates ?? []);
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState('');
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const canSave = partnerNickname.trim() && relationshipStartDate.trim();
-  const saveDate = () => {
-    if (!title.trim() || !date.trim()) return;
-    const next = { title: title.trim(), date: date.trim() };
-    setDates(editingIndex === null ? [...dates, next] : dates.map((item, index) => index === editingIndex ? next : item));
-    setTitle(''); setDate(''); setEditingIndex(null);
-  };
-  return <PageLayout><Text style={styles.eyebrow}>{getCopy('RELATIONSHIP_SETTINGS')}</Text><Text style={styles.settingsCopy}>{getCopy('RELATIONSHIP_SETTINGS_COPY')}</Text><Text style={styles.section}>{getCopy('RELATIONSHIP_BASIC')}</Text><TextInput style={styles.input} value={partnerNickname} onChangeText={setPartnerNickname} placeholder={getCopy('RELATIONSHIP_PARTNER_PLACEHOLDER')} placeholderTextColor={colors.textMuted} /><TextInput inputMode="numeric" keyboardType="numeric" maxLength={10} style={styles.input} value={relationshipStartDate} onChangeText={(value) => setRelationshipStartDate(formatLocalDateInput(value))} placeholder={getCopy('RELATIONSHIP_START_DATE_PLACEHOLDER')} placeholderTextColor={colors.textMuted} /><Text style={styles.section}>{getCopy('RELATIONSHIP_DATES')}</Text><TextInput inputMode="numeric" keyboardType="numeric" maxLength={10} style={styles.input} value={birthday} onChangeText={(value) => setBirthday(formatLocalDateInput(value))} placeholder={getCopy('RELATIONSHIP_BIRTHDAY_PLACEHOLDER')} placeholderTextColor={colors.textMuted} /><TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder={getCopy('RELATIONSHIP_CUSTOM_TITLE_PLACEHOLDER')} placeholderTextColor={colors.textMuted} /><TextInput inputMode="numeric" keyboardType="numeric" maxLength={10} style={styles.input} value={date} onChangeText={(value) => setDate(formatLocalDateInput(value))} placeholder={getCopy('RELATIONSHIP_CUSTOM_DATE_PLACEHOLDER')} placeholderTextColor={colors.textMuted} /><AppButton label={editingIndex === null ? getCopy('RELATIONSHIP_ADD_DATE') : getCopy('RELATIONSHIP_UPDATE_DATE')} onPress={saveDate} secondary />{dates.map((item, index) => <View key={`${item.title}-${item.date}-${index}`} style={styles.dateRow}><Text style={styles.dateText}>{item.title} · {item.date}</Text><View style={styles.rowActions}><AppButton label={getCopy('RELATIONSHIP_EDIT')} onPress={() => { setEditingIndex(index); setTitle(item.title); setDate(item.date); }} secondary size="S" /><AppButton label={getCopy('RELATIONSHIP_DELETE')} onPress={() => setDates(dates.filter((_, itemIndex) => itemIndex !== index))} secondary size="S" /></View></View>)}<View style={styles.actions}><AppButton label={getCopy('RELATIONSHIP_CANCEL')} onPress={onCancel} secondary /><AppButton label={getCopy('RELATIONSHIP_SAVE')} disabled={!canSave} onPress={() => onSave({ partnerNickname: partnerNickname.trim(), relationshipStartDate: relationshipStartDate.trim(), birthday: birthday.trim() || undefined, customImportantDates: dates })} /></View></PageLayout>;
+export function RelationshipProfileView({ profile, userName, onOpenEditor }: RelationshipProfileViewProps) {
+  const partnerName = profile?.partnerNickname || getCopy('RELATIONSHIP_DEFAULT_P2');
+  const anniversaryLabel = profile?.relationshipStatus === 'married' ? getCopy('RELATIONSHIP_MARRIED_DATE') : getCopy('RELATIONSHIP_DATING_DATE');
+  const anniversaryDate = profile?.relationshipStatus === 'married' ? profile?.marriageDate : profile?.relationshipStartDate;
+  const dates = getImportantDates(profile);
+  const preferences = getPreferenceItems(profile);
+  return (
+    <PageLayout>
+      <QuickReadCard accentColor={colors.pink} editor="basic" onPress={onOpenEditor} subtitle={getCopy('RELATIONSHIP_QUICK_BASIC_SUBTITLE')} title={getCopy('RELATIONSHIP_QUICK_BASIC')}>
+        <Text style={styles.primary}>{userName} ♥ {partnerName}</Text>
+        <Text style={styles.detail}>{anniversaryLabel} · {anniversaryDate || getCopy('RELATIONSHIP_NO_RELATIONSHIP_DATE')}</Text>
+        <Text numberOfLines={1} style={styles.muted}>{profile?.relationshipStatus === 'married' ? `${getCopy('RELATIONSHIP_DATING_DATE')} · ${profile.relationshipStartDate}` : profile?.relationshipMotto || getCopy('RELATIONSHIP_MOTTO_PLACEHOLDER')}</Text>
+      </QuickReadCard>
+      <QuickReadCard accentColor={colors.gold} editor="dates" onPress={onOpenEditor} subtitle={getCopy('RELATIONSHIP_QUICK_DATES_SUBTITLE')} title={getCopy('RELATIONSHIP_QUICK_DATES')}>
+        {dates.length ? <View style={styles.tags}>{dates.map((date) => <PixelTag color={colors.gold} key={`${date.label}-${date.date}`} label={`${date.label} · ${date.date}`} size="S" />)}</View> : <Text style={styles.muted}>{getCopy('RELATIONSHIP_NO_CUSTOM_DATES')}</Text>}
+      </QuickReadCard>
+      <QuickReadCard accentColor={colors.danger} editor="preferences" onPress={onOpenEditor} subtitle={getCopy('RELATIONSHIP_QUICK_PREFERENCES_SUBTITLE')} title={getCopy('RELATIONSHIP_QUICK_PREFERENCES')}>
+        <Text style={styles.primary}>{profile?.preferences?.style === 'practical' ? getCopy('RELATIONSHIP_STYLE_PRACTICAL') : getCopy('RELATIONSHIP_STYLE_ROMANTIC')}</Text>
+        {preferences.length ? <View style={styles.tags}>{preferences.map((item) => <PixelTag color={item.danger ? colors.danger : colors.accent} key={item.label} label={item.label} size="S" />)}</View> : <Text style={styles.muted}>{getCopy('RELATIONSHIP_NO_PREFERENCES')}</Text>}
+      </QuickReadCard>
+    </PageLayout>
+  );
+}
+
+function QuickReadCard({ accentColor, children, editor, onPress, subtitle, title }: {
+  accentColor: string;
+  children: ReactNode;
+  editor: RelationshipEditor;
+  onPress: (editor: RelationshipEditor) => void;
+  subtitle: string;
+  title: string;
+}) {
+  return <Pressable accessibilityRole="button" onPress={() => onPress(editor)}><PixelCard accentColor={accentColor} subtitle={subtitle} title={title} trailing={<Text style={[styles.open, { color: accentColor }]}>{getCopy('RELATIONSHIP_OPEN_EDITOR')} →</Text>}><View style={styles.cardContent}>{children}</View></PixelCard></Pressable>;
+}
+
+function getImportantDates(profile: RelationshipProfile | null): { label: string; date: string }[] {
+  const birthday = profile?.birthday ? [{ label: getCopy('RELATIONSHIP_BIRTHDAY'), date: profile.birthday }] : [];
+  return [...birthday, ...(profile?.customImportantDates ?? []).map((date) => ({
+    label: `${date.title} · ${getCopy(date.importance === 'normal' ? 'RELATIONSHIP_DATE_NORMAL' : 'RELATIONSHIP_DATE_SURVIVAL')}`,
+    date: date.date,
+  }))];
+}
+
+function getPreferenceItems(profile: RelationshipProfile | null): { label: string; danger: boolean }[] {
+  const preferences = profile?.preferences;
+  return [
+    ...(preferences?.preferenceTags ?? []).map((label) => ({ label, danger: false })),
+    ...(preferences?.dietaryPreferences ?? []).map((label) => ({ label, danger: false })),
+    ...(preferences?.landmines ?? []).map((label) => ({ label, danger: true })),
+  ];
 }
 
 const styles = StyleSheet.create({
-  eyebrow: { color: colors.accent, fontFamily: fonts.number, fontSize: typography.micro }, heroText: { color: colors.text, fontFamily: fonts.body, fontSize: typography.cardTitle, fontWeight: '700' },
-  copy: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.caption }, settingsCopy: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.caption, lineHeight: 21 }, section: { color: colors.gold, fontFamily: fonts.body, fontSize: typography.cardTitle, fontWeight: '700', marginTop: spacing.sm },
-  input: { backgroundColor: colors.cardBg, borderColor: colors.border, borderRadius: radius.xs, borderWidth, color: colors.text, fontFamily: fonts.body, fontSize: typography.caption, padding: spacing.sm }, dateRow: { alignItems: 'center', backgroundColor: colors.subBoxBg, flexDirection: 'row', gap: spacing.sm, justifyContent: 'space-between', padding: spacing.sm }, dateText: { color: colors.text, flex: 1, fontFamily: fonts.body, fontSize: typography.caption }, rowActions: { flexDirection: 'row', gap: spacing.xs }, actions: { flexDirection: 'row', gap: spacing.sm, justifyContent: 'flex-end', marginTop: spacing.md },
+  open: { fontFamily: fonts.number, fontSize: typography.micro },
+  cardContent: { gap: spacing.xs },
+  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  primary: { color: colors.text, fontFamily: fonts.body, fontSize: typography.cardTitle, fontWeight: '700' },
+  detail: { color: colors.gold, fontFamily: fonts.number, fontSize: typography.caption },
+  muted: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.caption },
 });

@@ -12,13 +12,29 @@ export type OnboardingStatus = 'intro' | 'profile' | 'notificationExplained' | '
 export interface RelationshipProfile {
   partnerNickname: string;
   relationshipStartDate: string;
+  marriageDate?: string;
   birthday?: string;
   customImportantDates: CustomImportantDate[];
+  userNickname?: string;
+  relationshipMotto?: string;
+  relationshipStatus?: RelationshipStatus;
+  preferences?: RelationshipPreferences;
 }
 
 export interface CustomImportantDate {
   title: string;
   date: string;
+  recurrence: 'yearly';
+  importance: 'survival' | 'normal';
+}
+
+export type RelationshipStatus = 'dating' | 'married';
+
+export interface RelationshipPreferences {
+  style: 'romantic' | 'practical';
+  preferenceTags: string[];
+  dietaryPreferences: string[];
+  landmines: string[];
 }
 
 export interface TutorialReward {

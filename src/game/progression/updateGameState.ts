@@ -13,7 +13,9 @@ export function updateGameState(
     exp: currentState.exp + reward.expDelta,
     combo,
     rankScore,
-    status: rankScore >= gameRules.progression.safeRankThreshold ? 'safe' : 'danger',
+    status: rankScore === gameRules.progression.minRank
+      ? 'gg'
+      : rankScore >= gameRules.progression.safeRankThreshold ? 'safe' : 'danger',
   };
 }
 

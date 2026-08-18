@@ -24,7 +24,7 @@ export function Dialog({ children, description, onClose, title, tone = 'info', v
 const styles = StyleSheet.create({
   backdrop: { alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.7)', flex: 1, justifyContent: 'center', padding: spacing.lg },
   dialog: { backgroundColor: colors.cardBg, borderRadius: radius.sm, borderWidth, gap: spacing.md, maxWidth: 480, padding: spacing.lg, width: '100%' },
-  header: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
+  header: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.sm, justifyContent: 'space-between' },
   title: { color: colors.text, flex: 1, fontFamily: fonts.body, fontSize: typography.sectionTitle, fontWeight: '700' },
   close: { fontFamily: fonts.number, fontSize: typography.hero, lineHeight: typography.hero },
   description: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.body, lineHeight: 24 },

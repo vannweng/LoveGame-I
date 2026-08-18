@@ -2,6 +2,12 @@ import type { RankIdentity } from '@/features/missions/domain';
 
 export const gameRules = {
   progression: { minRank: -10, maxRank: 10, safeRankThreshold: 1 },
+  revival: {
+    comboAfter: 0,
+    oathRequired: true,
+    rankAfter: -5,
+    titleKey: 'REBIRTH_TITLE',
+  },
   rankIdentities: [
     { minRank: 7, identity: '英雄守護者' },
     { minRank: 4, identity: '生還者' },

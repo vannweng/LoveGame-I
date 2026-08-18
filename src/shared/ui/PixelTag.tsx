@@ -13,8 +13,8 @@ export function PixelTag({ color = colors.accent, label, size = 'S' }: PixelTagP
 }
 
 const styles = StyleSheet.create({
-  tag: { alignSelf: 'flex-start', borderRadius: radius.xs, borderWidth: 1, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
-  label: { fontFamily: fonts.number, fontSize: typography.micro, letterSpacing: 0.5 },
+  tag: { alignSelf: 'flex-start', borderRadius: radius.xs, borderWidth: 1, maxWidth: '100%', paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
+  label: { flexShrink: 1, fontFamily: fonts.number, fontSize: typography.micro, letterSpacing: 0.5 },
   medium: { paddingHorizontal: 10, paddingVertical: 6 },
   mediumLabel: { fontSize: typography.tag },
 });

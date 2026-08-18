@@ -1,4 +1,5 @@
 import type { MissionCompletion } from '@/features/missions/application/completeMission';
+import type { DailyGameplayState } from '@/features/dailyGameplay/domain';
 import type { Mission } from '@/features/missions/domain';
 import type { AnalyticsService } from '@/infrastructure/analytics';
 
@@ -10,6 +11,11 @@ export function getMissionAnalyticsProperties(mission: Mission, now: Date) {
     difficulty: 'normal',
     days_before_due: Math.ceil((mission.successUntil.getTime() - now.getTime()) / 86_400_000),
   };
+}
+
+export function trackDailyGameplayView(analytics: AnalyticsService, state: DailyGameplayState): void {
+  analytics.track({ name: 'daily_loop_view', properties: { mode: state.mode, stage: state.stage } });
+  analytics.track({ name: state.mode === 'crisis' ? 'crisis_detected' : 'safe_state_view', properties: { stage: state.stage } });
 }
 
 export function trackMissionResolution(analytics: AnalyticsService, completion: MissionCompletion, mission: Mission, completedAt: Date, previousRank: number): void {

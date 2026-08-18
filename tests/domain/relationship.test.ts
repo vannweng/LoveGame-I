@@ -4,11 +4,37 @@ import test from 'node:test';
 import {
   calculateAnnualDateCountdown,
   calculateRelationshipDays,
+  withRelationshipProfileDefaults,
   getRelationshipDashboardMetrics,
 } from '@/features/relationship/domain';
+import type { CustomImportantDate } from '@/features/relationship/domain';
 
 test('calculateRelationshipDays includes the relationship start day', () => {
   assert.equal(calculateRelationshipDays('2026-08-10', new Date('2026-08-13T10:00:00+08:00')), 4);
+});
+
+test('withRelationshipProfileDefaults hydrates optional relationship editor fields', () => {
+  const profile = withRelationshipProfileDefaults({
+    partnerNickname: 'P2',
+    relationshipStartDate: '2026-08-13',
+    customImportantDates: [],
+  });
+
+  assert.equal(profile.relationshipStatus, 'dating');
+  assert.deepEqual(profile.preferences, {
+    style: 'romantic', preferenceTags: [], dietaryPreferences: [], landmines: [],
+  });
+});
+
+test('custom important dates default to yearly survival events for existing profiles', () => {
+  const profile = withRelationshipProfileDefaults({
+    partnerNickname: 'P2', relationshipStartDate: '2026-08-13',
+    customImportantDates: [{ title: '第一次旅行', date: '2026-09-01' } as CustomImportantDate],
+  });
+
+  assert.deepEqual(profile.customImportantDates, [{
+    title: '第一次旅行', date: '2026-09-01', recurrence: 'yearly', importance: 'survival',
+  }]);
 });
 
 test('calculateRelationshipDays rejects invalid or future dates', () => {

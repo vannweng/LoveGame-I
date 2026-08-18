@@ -7,7 +7,7 @@ import { colors, fonts, typography } from '@/shared/theme/tokens';
 
 interface MissionCardProps {
   title: string;
-  subtitle: string;
+  subtitle?: string;
   status: { label: string; variant: StatusVariant };
   dueLabel?: string;
   rewardLabel?: string;

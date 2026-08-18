@@ -97,6 +97,7 @@ test('fail cannot lower Rank below -10', () => {
 
   assert.equal(nextState.combo, 0);
   assert.equal(nextState.rankScore, -10);
+  assert.equal(nextState.status, 'gg');
 });
 
 test('getRankIdentity maps all approved rank boundaries', () => {

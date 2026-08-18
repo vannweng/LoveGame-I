@@ -9,7 +9,7 @@
 | Repository／資料庫 | 1A：依 feature 建立完整 repository contract，再加入 Local 與 Firestore adapter | 進行中：contracts、Local + Firestore adapters 已完成；等待 3A Rules 後切換 composition |
 | `mission_create` Analytics | 2A：於 `MissionGenerationService` 真正建立任務成功後送出 | 已完成：`created === true` 才送安全參數 |
 | 正式 Analytics | 3A：Firebase Analytics adapter | 待 Firebase 正式接入 |
-| UI primitives | 4A：高頻 MVP 元件組 | 進行中：共用 primitive 已建立，既有任務畫面逐步導入 |
+| UI primitives | 4A：高頻 MVP 元件組 | 進行中：共用 primitive 已建立，任務、結果、個人中心與 Daily Gameplay Loop 已導入 |
 
 ## 正式 MVP 實作選擇與順序
 

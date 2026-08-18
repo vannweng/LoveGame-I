@@ -12,10 +12,10 @@ import { colors, fonts, typography } from '@/shared/theme/tokens';
 interface MissionResultViewProps {
   completion: MissionCompletion;
   mission: import('@/features/missions/domain').Mission;
-  onReturnHome: () => void;
+  onOpenNextHook: () => void;
 }
 
-export function MissionResultView({ completion, mission, onReturnHome }: MissionResultViewProps) {
+export function MissionResultView({ completion, mission, onOpenNextHook }: MissionResultViewProps) {
   return (
     <PageLayout>
       <Text style={styles.eyebrow}>{getCopy('MISSION_RESULT_EYEBROW')}</Text>
@@ -24,7 +24,7 @@ export function MissionResultView({ completion, mission, onReturnHome }: Mission
       </PixelCard>
       <Text style={styles.copy}>{getCopy(mission.template[`${completion.result}CopyKey`])}</Text>
       <View style={styles.fill} />
-      <AppButton label={getCopy('MISSION_BACK_HOME')} onPress={onReturnHome} />
+      <AppButton label={getCopy('DAILY_CONTINUE_NEXT_HOOK')} onPress={onOpenNextHook} />
     </PageLayout>
   );
 }

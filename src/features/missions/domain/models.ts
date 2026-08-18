@@ -52,7 +52,7 @@ export interface GameState {
   exp: number;
   combo: number;
   rankScore: number;
-  status: 'danger' | 'safe';
+  status: 'danger' | 'safe' | 'gg';
 }
 
 export interface RewardResult {
