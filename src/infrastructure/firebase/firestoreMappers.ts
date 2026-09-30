@@ -1,6 +1,6 @@
 import type { CollectionState } from '@/features/collection/domain';
 import type { Mission } from '@/features/missions/domain';
-import type { OnboardingState, RelationshipProfile } from '@/features/relationship/domain';
+import { normalizeOnboardingState, type OnboardingState, type RelationshipProfile } from '@/features/relationship/domain';
 
 type FirestoreDate = { toDate?: () => Date } | Date | string;
 
@@ -18,7 +18,7 @@ export function toMission(value: unknown): Mission {
 }
 
 export function toOnboardingState(value: unknown): OnboardingState {
-  return value as OnboardingState;
+  return normalizeOnboardingState(value);
 }
 
 export function toRelationshipProfile(value: unknown): RelationshipProfile {

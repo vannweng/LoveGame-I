@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { GameState } from '@/features/missions/domain';
+import type { GameState, Mission } from '@/features/missions/domain';
 import type { AnnualDateCountdown } from '@/features/relationship/domain';
 import { getRankIdentity } from '@/game/rank/getRankIdentity';
 import { getCopy } from '@/content';
@@ -16,6 +16,8 @@ interface HomeViewProps {
   gameState: GameState;
   importantDate: AnnualDateCountdown | null;
   importantDateLabel: string;
+  mainMission: Mission;
+  showMainMission: boolean;
   onOpenMissions: () => void;
   onOpenRebirth?: () => void;
   p1Name: string;
@@ -27,6 +29,8 @@ export function HomeView({
   gameState,
   importantDate,
   importantDateLabel,
+  mainMission,
+  showMainMission,
   onOpenMissions,
   onOpenRebirth,
   p1Name,
@@ -51,9 +55,11 @@ export function HomeView({
       <PixelCard accentColor={colors.accent} title={importantDateLabel} subtitle={getCopy('HOME_COUNTDOWN_SUBTITLE')} trailing={<Text style={styles.remain}>{getCopy('HOME_REMAIN_LABEL')} <Text style={styles.remainValue}>{padCountdown(importantDate?.daysRemaining ?? 0)}</Text></Text>}>
         <View style={styles.advice}><Text style={styles.adviceTitle}>{getCopy('HOME_ADVICE_LABEL')}</Text><Text style={styles.detail}>{importantDate ? getCopy('HOME_IMPORTANT_DATE_ADVICE', { label: importantDateLabel, days: importantDate.daysRemaining }) : getCopy('HOME_NO_IMPORTANT_DATE')}</Text></View>
       </PixelCard>
-      {onOpenRebirth ? <PixelCard accentColor={colors.danger} title={getCopy('REBIRTH_TITLE')} subtitle="GG"><Text style={styles.detail}>{getCopy('REBIRTH_COPY')}</Text><AppButton label={getCopy('REBIRTH_CONFIRM')} onPress={onOpenRebirth} /></PixelCard> : <Pressable accessibilityRole="button" onPress={onOpenMissions}><PixelCard accentColor={colors.safe} title={getCopy('HOME_TODAY_QUEST_TITLE')} subtitle="DAILY PLAY"><Text style={styles.detail}>{getCopy('HOME_TODAY_QUEST_COPY')}</Text></PixelCard></Pressable>}
+      {onOpenRebirth ? <PixelCard accentColor={colors.danger} title={getCopy('REBIRTH_TITLE')} subtitle="GG"><Text style={styles.detail}>{getCopy('REBIRTH_COPY')}</Text><AppButton label={getCopy('REBIRTH_CONFIRM')} onPress={onOpenRebirth} /></PixelCard> : null}
+      {!onOpenRebirth && showMainMission ? <PixelCard accentColor={colors.orange} title={getCopy(mainMission.template.titleKey)} subtitle={getCopy('HOME_MAIN_MISSION_SUBTITLE')}><Text style={styles.detail}>{getCopy(mainMission.template.descriptionKey)}</Text><AppButton label={getCopy('HOME_MAIN_MISSION_ACTION')} onPress={onOpenMissions} /></PixelCard> : null}
+      {!onOpenRebirth ? <Pressable accessibilityRole="button" onPress={onOpenMissions}><PixelCard accentColor={colors.safe} title={getCopy('HOME_TODAY_QUEST_TITLE')} subtitle={getCopy('HOME_AUXILIARY_SUBTITLE')}><Text style={styles.detail}>{getCopy('HOME_TODAY_QUEST_COPY')}</Text></PixelCard></Pressable> : null}
       <View style={styles.fill} />
-      {!onOpenRebirth ? <AppButton label={getCopy('HOME_GO_TO_QUESTS')} onPress={onOpenMissions} /> : null}
+      {!onOpenRebirth && !showMainMission ? <AppButton label={getCopy('HOME_GO_TO_QUESTS')} onPress={onOpenMissions} /> : null}
     </PageLayout>
   );
 }

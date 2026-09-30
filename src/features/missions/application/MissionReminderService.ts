@@ -33,4 +33,11 @@ export class MissionReminderService {
   subscribeToMissionOpen(listener: (missionId: string) => void): () => void {
     return this.notifications.subscribeToMissionOpen(listener);
   }
+
+  async cancel(missionId: string): Promise<void> {
+    const existing = await this.repository.get(missionId);
+    if (!existing) return;
+    await this.notifications.cancelScheduledReminder(existing.notificationId);
+    await this.repository.remove(missionId);
+  }
 }

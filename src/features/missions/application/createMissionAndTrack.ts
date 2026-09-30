@@ -1,12 +1,13 @@
 import type { AnalyticsService } from '@/infrastructure/analytics';
-import type { MissionGenerationResult, MissionGenerationService } from './MissionGenerationService';
+import type { ImportantDateMissionTemplateId, MissionGenerationResult, MissionGenerationService } from './MissionGenerationService';
 
 export async function createMissionAndTrack(
   generationService: MissionGenerationService,
   analytics: AnalyticsService,
-  templateId: 'birthday-dinner',
+  templateId: ImportantDateMissionTemplateId,
+  sourceImportantDateId?: string,
 ): Promise<MissionGenerationResult> {
-  const result = await generationService.create(templateId);
+  const result = await generationService.create(templateId, sourceImportantDateId);
   if (result.created && result.analytics) {
     analytics.track({
       name: 'mission_create',

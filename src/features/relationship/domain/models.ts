@@ -7,14 +7,21 @@ export interface Relationship {
   timezone: string;
 }
 
-export type OnboardingStatus = 'intro' | 'profile' | 'notificationExplained' | 'identity' | 'tutorial' | 'reward' | 'completed';
+export type OnboardingStatus = 'identity' | 'singleIntro' | 'crushes' | 'partnerName' | 'partnerReward' | 'tutorial' | 'reward' | 'completed';
+export type RelationshipMode = 'single' | 'partnered';
+
+export interface CrushCandidate {
+  id: 'crush-a' | 'crush-b' | 'crush-c';
+  nickname: string;
+}
 
 export interface RelationshipProfile {
   partnerNickname: string;
-  relationshipStartDate: string;
+  relationshipStartDate?: string;
   marriageDate?: string;
   birthday?: string;
   customImportantDates: CustomImportantDate[];
+  importantDateEffort?: BuiltInImportantDateEffort;
   userNickname?: string;
   relationshipMotto?: string;
   relationshipStatus?: RelationshipStatus;
@@ -22,10 +29,20 @@ export interface RelationshipProfile {
 }
 
 export interface CustomImportantDate {
+  id?: string;
   title: string;
   date: string;
   recurrence: 'yearly';
   importance: 'survival' | 'normal';
+  effortLevel?: ImportantDateEffortLevel;
+}
+
+export type ImportantDateEffortLevel = 'full' | 'balanced' | 'minimal';
+
+export interface BuiltInImportantDateEffort {
+  birthday?: ImportantDateEffortLevel;
+  marriageAnniversary?: ImportantDateEffortLevel;
+  relationshipAnniversary?: ImportantDateEffortLevel;
 }
 
 export type RelationshipStatus = 'dating' | 'married';
@@ -44,6 +61,9 @@ export interface TutorialReward {
 
 export interface OnboardingState {
   status: OnboardingStatus;
+  relationshipMode: RelationshipMode | null;
+  crushCandidates: CrushCandidate[];
+  activeCrushId: CrushCandidate['id'] | null;
   profile: RelationshipProfile | null;
   tutorialReward: TutorialReward | null;
 }

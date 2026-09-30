@@ -54,7 +54,7 @@ function QuickReadCard({ accentColor, children, editor, onPress, subtitle, title
 function getImportantDates(profile: RelationshipProfile | null): { label: string; date: string }[] {
   const birthday = profile?.birthday ? [{ label: getCopy('RELATIONSHIP_BIRTHDAY'), date: profile.birthday }] : [];
   return [...birthday, ...(profile?.customImportantDates ?? []).map((date) => ({
-    label: `${date.title} · ${getCopy(date.importance === 'normal' ? 'RELATIONSHIP_DATE_NORMAL' : 'RELATIONSHIP_DATE_SURVIVAL')}`,
+    label: date.title,
     date: date.date,
   }))];
 }

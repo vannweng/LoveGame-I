@@ -15,6 +15,7 @@ import { ExpoClipboardService } from '@/infrastructure/clipboard';
 interface AppShellProps extends PropsWithChildren {
   activeTab: BottomTab;
   flags: FeatureFlags;
+  onResetAndSignOut: () => Promise<void>;
   onSignOut: () => void;
   onSelectTab: (tab: BottomTab) => void;
   onSelectDevelopmentScenario?: (scenario: DevelopmentScenario) => void;
@@ -25,12 +26,12 @@ interface AppShellProps extends PropsWithChildren {
   userName: string;
 }
 
-export function AppShell({ activeTab, children, flags, onSelectTab, onSelectDevelopmentScenario, onResetDevelopmentToday, onConfigureDevelopment, onSignOut, partnerName, relationshipDays, userName }: AppShellProps) {
+export function AppShell({ activeTab, children, flags, onSelectTab, onSelectDevelopmentScenario, onResetDevelopmentToday, onConfigureDevelopment, onResetAndSignOut, onSignOut, partnerName, relationshipDays, userName }: AppShellProps) {
   const [devVisible, setDevVisible] = useState(false);
   const [fullPage, setFullPage] = useState<'profile' | 'sos' | null>(null);
   const clipboardService = useMemo(() => new ExpoClipboardService(), []);
   if (fullPage === 'sos') return <SafeAreaView style={styles.safe}><SosGuidePage clipboardService={clipboardService} onClose={() => setFullPage(null)} /></SafeAreaView>;
-  if (fullPage === 'profile') return <SafeAreaView style={styles.safe}><UserProfilePage onClose={() => setFullPage(null)} onSignOut={onSignOut} partnerName={partnerName} relationshipDays={relationshipDays} userName={userName} /></SafeAreaView>;
+  if (fullPage === 'profile') return <SafeAreaView style={styles.safe}><UserProfilePage onClose={() => setFullPage(null)} onResetAndSignOut={onResetAndSignOut} onSignOut={onSignOut} partnerName={partnerName} relationshipDays={relationshipDays} userName={userName} /></SafeAreaView>;
   return <SafeAreaView style={styles.safe}><AppHeader onProfile={() => setFullPage('profile')} onSos={() => setFullPage('sos')} /><View style={styles.content}>{children}</View>{onSelectDevelopmentScenario ? <Pressable onPress={() => setDevVisible(true)} style={styles.devButton}><Text style={styles.devLabel}>{getCopy('DEV_MENU_LABEL')}</Text></Pressable> : null}<BottomNavigation activeTab={activeTab} flags={flags} onSelect={onSelectTab} />{onSelectDevelopmentScenario && onResetDevelopmentToday && onConfigureDevelopment ? <DevScenarioPicker visible={devVisible} onClose={() => setDevVisible(false)} onConfigure={onConfigureDevelopment} onResetToday={onResetDevelopmentToday} onSelect={onSelectDevelopmentScenario} /> : null}</SafeAreaView>;
 }
 

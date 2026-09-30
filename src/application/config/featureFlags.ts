@@ -10,7 +10,7 @@ export interface FeatureFlags {
  * Expo public variables are safe here because flags are not secrets.
  */
 export const featureFlags: Readonly<FeatureFlags> = {
-  actionHub: readFlag(process.env.EXPO_PUBLIC_FEATURE_ACTION_HUB, true),
+  actionHub: readFlag(process.env.EXPO_PUBLIC_FEATURE_ACTION_HUB, false),
   aiRecommendation: readFlag(process.env.EXPO_PUBLIC_FEATURE_AI_RECOMMENDATION, false),
   calendar: readFlag(process.env.EXPO_PUBLIC_FEATURE_CALENDAR, false),
   restaurant: readFlag(process.env.EXPO_PUBLIC_FEATURE_RESTAURANT, false),

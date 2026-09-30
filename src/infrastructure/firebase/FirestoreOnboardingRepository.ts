@@ -17,5 +17,5 @@ export class FirestoreOnboardingRepository implements OnboardingRepository {
 }
 
 function createInitialState(): OnboardingState {
-  return { status: 'intro', profile: null, tutorialReward: null };
+  return { status: 'identity', relationshipMode: null, crushCandidates: [], activeCrushId: null, profile: null, tutorialReward: null };
 }

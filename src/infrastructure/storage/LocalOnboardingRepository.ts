@@ -1,11 +1,11 @@
-import type { OnboardingState } from '@/features/relationship/domain';
+import { normalizeOnboardingState, type OnboardingState } from '@/features/relationship/domain';
 import type { OnboardingRepository } from '@/features/relationship/data/OnboardingRepository';
 import { secureStorage } from '@/infrastructure/storage/secureStorage';
 
 export class LocalOnboardingRepository implements OnboardingRepository {
   async getForUser(userId: string): Promise<OnboardingState> {
     const savedState = await secureStorage.getItem(storageKey(userId));
-    return savedState ? (JSON.parse(savedState) as OnboardingState) : createInitialState();
+    return savedState ? normalizeOnboardingState(JSON.parse(savedState)) : createInitialState();
   }
 
   async saveForUser(userId: string, state: OnboardingState): Promise<void> {
@@ -18,5 +18,5 @@ function storageKey(userId: string): string {
 }
 
 function createInitialState(): OnboardingState {
-  return { status: 'intro', profile: null, tutorialReward: null };
+  return { status: 'identity', relationshipMode: null, crushCandidates: [], activeCrushId: null, profile: null, tutorialReward: null };
 }

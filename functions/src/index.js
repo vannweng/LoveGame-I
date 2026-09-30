@@ -3,7 +3,10 @@ const { getFirestore, Timestamp } = require('firebase-admin/firestore');
 const { HttpsError, onCall } = require('firebase-functions/v2/https');
 const { createMissionDocument } = require('./createMissionDocument');
 const { gameRules } = require('./gameRules');
+const { resolveImportantDateSource } = require('./importantDateSource');
+const { assertTemplateAllowedForEffort } = require('./importantDateEffort');
 const { missionTemplates } = require('./missionTemplates');
+const { resolveGameState } = require('./resolveGameState');
 
 initializeApp();
 
@@ -12,6 +15,7 @@ const db = getFirestore();
 exports.createMission = onCall(async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Authentication is required.');
   const templateId = request.data?.templateId;
+  const sourceImportantDateId = request.data?.sourceImportantDateId ?? 'birthday';
   const template = missionTemplates[templateId];
   if (!template) throw new HttpsError('invalid-argument', 'The mission template is not available.');
 
@@ -26,11 +30,13 @@ exports.createMission = onCall(async (request) => {
     const now = Timestamp.now();
     let mission;
     try {
-      mission = createMissionDocument({ now, profile: profile.data(), template, timezone: save.data().timezone ?? 'UTC' });
+      const importantDate = resolveImportantDateSource(profile.data(), sourceImportantDateId);
+      assertTemplateAllowedForEffort(template.id, importantDate.effortLevel);
+      mission = createMissionDocument({ importantDate, now, template, timezone: save.data().timezone ?? 'UTC' });
     } catch (error) {
       throw new HttpsError('failed-precondition', error instanceof Error ? error.message : 'Mission cannot be created.');
     }
-    const duplicate = await transaction.get(saveRef.collection('missions').where('generationKey', '==', mission.generationKey).limit(1));
+    const duplicate = await transaction.get(saveRef.collection('missions').where('occurrenceKey', '==', mission.occurrenceKey).limit(1));
     if (!duplicate.empty) return { created: false, missionId: duplicate.docs[0].id };
 
     const missionRef = saveRef.collection('missions').doc();
@@ -74,23 +80,16 @@ exports.resolveMission = onCall(async (request) => {
       throw new HttpsError('failed-precondition', 'Mission is not active yet.');
     }
     const result = resolveResult(missionData, now);
-    const reward = missionData.template.reward[result];
-    const rankDelta = missionData.template.rankImpact[result];
     const previous = progression.exists ? progression.data() : { exp: 0, combo: 0, rankScore: 0, status: 'danger' };
-    const next = {
-      exp: previous.exp + reward.expDelta,
-      combo: result === 'fail' ? 0 : previous.combo + reward.comboDelta,
-      rankScore: clampRank(previous.rankScore + rankDelta),
-      status: clampRank(previous.rankScore + rankDelta) >= gameRules.progression.safeRankThreshold ? 'safe' : 'danger',
-      updatedAt: now,
-    };
+    const { reward, gameState } = resolveGameState(missionData, previous, result);
+    const next = { ...gameState, updatedAt: now };
     const nextCollection = evaluateCollection(collection.exists ? collection.data() : { items: [], graves: [] }, result, previous.rankScore, next, now);
 
     transaction.update(missionRef, { lifecycleStatus: 'resolved', resolution: result, resolvedAt: now, status: 'resolved' });
-    transaction.set(resolutionRef, { missionId, result, reward: { ...reward, rankDelta }, resolvedAt: now });
+    transaction.set(resolutionRef, { missionId, result, reward, resolvedAt: now });
     transaction.set(progressionRef, next);
     transaction.set(collectionRef, { ...nextCollection, updatedAt: now });
-    return { result, reward: { ...reward, rankDelta }, gameState: next, collectionState: nextCollection };
+    return { result, reward, gameState: next, collectionState: nextCollection };
   });
 });
 
@@ -112,10 +111,6 @@ function evaluateCollection(state, result, previousRank, next, now) {
     }
   });
   return { items, graves };
-}
-
-function clampRank(rankScore) {
-  return Math.max(gameRules.progression.minRank, Math.min(gameRules.progression.maxRank, rankScore));
 }
 
 function isCollectionRuleUnlocked(rule, result, previousRank, next) {

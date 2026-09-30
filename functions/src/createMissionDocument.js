@@ -2,33 +2,32 @@ const { Timestamp } = require('firebase-admin/firestore');
 
 const DAY_MS = 86_400_000;
 
-exports.createMissionDocument = ({ now, profile, template, timezone }) => {
-  if (template.eventType !== 'birthday' || !isLocalDate(profile.birthday)) {
-    throw new Error('A valid birthday is required for this template.');
+exports.createMissionDocument = ({ importantDate, now, template, timezone }) => {
+  if (!importantDate || !isLocalDate(importantDate.date)) {
+    throw new Error('A valid important date is required for this template.');
   }
 
-  const eventDate = nextAnnualDate(profile.birthday, now.toDate(), timezone);
-  const opensDate = addDays(eventDate, template.trigger.eventOffsetDays);
-  const successUntilDate = addDays(opensDate, template.trigger.successDays);
-  const failAtDate = addDays(successUntilDate, template.trigger.successDays);
-  const opensAt = timestampAtStartOfDay(opensDate, timezone);
+  const targetDate = nextAnnualDate(importantDate.date, now.toDate(), timezone);
+  const eventDate = addDays(targetDate, template.trigger.eventOffsetDays);
+  const successUntilDate = addDays(eventDate, template.trigger.successDays);
+  const opensAt = timestampAtStartOfDay(eventDate, timezone);
   const successUntil = timestampAtStartOfDay(successUntilDate, timezone);
-  const failAt = timestampAtStartOfDay(failAtDate, timezone);
-  const occurrenceYear = eventDate.slice(0, 4);
+  const failAt = timestampAtStartOfDay(targetDate, timezone);
 
   return {
     eventDate,
+    effortLevel: importantDate.effortLevel,
     failAt,
-    generationKey: `${template.id}:${occurrenceYear}`,
-    importance: template.rankImpact.appliesTo,
+    generationKey: `${importantDate.id}:${targetDate}:${template.id}`,
+    importance: importantDate.importance,
     lifecycleStatus: now.toMillis() < opensAt.toMillis() ? 'scheduled' : 'active',
-    occurrenceKey: `${template.eventType}:${eventDate}:${template.id}`,
+    occurrenceKey: `${importantDate.id}:${targetDate}:${template.id}`,
     opensAt,
     rulesetVersion: '0.2',
-    sourceImportantDateId: 'birthday',
+    sourceImportantDateId: importantDate.id,
     status: now.toMillis() < opensAt.toMillis() ? 'scheduled' : 'active',
     successUntil,
-    targetDate: eventDate,
+    targetDate,
     template,
   };
 };

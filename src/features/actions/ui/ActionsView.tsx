@@ -29,9 +29,10 @@ interface MissionBoardViewProps {
   onShareWeekly: (template: ActivityTemplate) => void;
   onOpenMainMission: () => void;
   showMainMission: boolean;
+  embedded?: boolean;
 }
 
-export function MissionBoardView({ board, mission, relationshipDays, now, onCompleteDaily, onCompleteWeekly, onCancelDaily, onCancelWeekly, onRerollDaily, onOpenMainMission, onRerollWeekly, onSelectDaily, onSelectWeekly, onContinueDaily, onContinueWeekly, onShareWeekly, showMainMission }: MissionBoardViewProps) {
+export function MissionBoardView({ board, mission, relationshipDays, now, onCompleteDaily, onCompleteWeekly, onCancelDaily, onCancelWeekly, onRerollDaily, onOpenMainMission, onRerollWeekly, onSelectDaily, onSelectWeekly, onContinueDaily, onContinueWeekly, onShareWeekly, showMainMission, embedded = false }: MissionBoardViewProps) {
   const [dailyReflection, setDailyReflection] = useState(board.daily.reflection ?? '');
   const [weeklyReflection, setWeeklyReflection] = useState(board.weekly.reflection ?? '');
   const daily = findTemplate(board.daily.templateId);
@@ -39,12 +40,14 @@ export function MissionBoardView({ board, mission, relationshipDays, now, onComp
   const isWeekend = [0, 6].includes(now.getDay());
   const dailyOptions = getDailyDrawOptions(board, relationshipDays, now);
   const weeklyOptions = getWeeklyDrawOptions(board, now);
-  return <PageLayout>
+  const content = <>
     <Text style={styles.eyebrow}>[LOVE LOOP] DAY {relationshipDays}</Text>
-    {showMainMission ? <PixelCard accentColor={colors.orange} title={getCopy(mission.template.titleKey)} subtitle="重要日，別裝沒看見" trailing={<PixelTag color={colors.orange} label="要緊" />}><Text style={styles.description}>{getCopy(mission.template.descriptionKey)}</Text><Text style={styles.reward}>這關有點要緊，別滑掉。</Text><AppButton label="去面對重要日" onPress={onOpenMainMission} size="S" /></PixelCard> : null}
+    {showMainMission ? <><Text style={styles.mainSection}>{getCopy('MISSION_MAIN_SECTION')}</Text><PixelCard accentColor={colors.orange} title={getCopy(mission.template.titleKey)} subtitle={getCopy('MISSION_MAIN_SUBTITLE')} trailing={<PixelTag color={colors.orange} label={getCopy('MISSION_MAIN_BADGE')} />}><Text style={styles.description}>{getCopy(mission.template.descriptionKey)}</Text><Text style={styles.reward}>{getCopy('MISSION_MAIN_PRIORITY')}</Text><AppButton label={getCopy('MISSION_MAIN_ACTION')} onPress={onOpenMainMission} size="S" /></PixelCard></> : null}
+    <Text style={styles.auxiliarySection}>{getCopy('MISSION_AUXILIARY_SECTION')}</Text>
     <DailyCard completedIds={board.daily.completedTemplateIds} options={dailyOptions} reflection={dailyReflection} rerollUsed={board.rerollUsed} template={daily} onCancel={() => { setDailyReflection(''); onCancelDaily(); }} onComplete={() => onCompleteDaily(dailyReflection)} onContinue={onContinueDaily} onReflectionChange={setDailyReflection} onReroll={onRerollDaily} onSelect={onSelectDaily} />
     <WeeklyCard completedIds={board.weekly.completedTemplateIds} isWeekend={isWeekend} options={weeklyOptions} reflection={weeklyReflection} rerollUsed={board.rerollUsed} template={weekly} onCancel={() => { setWeeklyReflection(''); onCancelWeekly(); }} onComplete={() => onCompleteWeekly(weeklyReflection)} onContinue={onContinueWeekly} onReflectionChange={setWeeklyReflection} onReroll={onRerollWeekly} onSelect={onSelectWeekly} onShare={onShareWeekly} />
-  </PageLayout>;
+  </>;
+  return embedded ? content : <PageLayout>{content}</PageLayout>;
 }
 
 export function ActionsView() {
@@ -78,6 +81,8 @@ function CompletedCards({ cards }: { cards: ActivityTemplate[] }) {
 
 const styles = StyleSheet.create({
   eyebrow: { color: colors.accent, fontFamily: fonts.number, fontSize: typography.micro, letterSpacing: 1 },
+  mainSection: { color: colors.orange, fontFamily: fonts.number, fontSize: typography.caption, letterSpacing: 1 },
+  auxiliarySection: { color: colors.textMuted, fontFamily: fonts.number, fontSize: typography.micro, letterSpacing: 1, marginTop: spacing.md },
   description: { color: colors.text, fontFamily: fonts.body, fontSize: typography.body, lineHeight: 24 },
   reward: { color: colors.gold, fontFamily: fonts.number, fontSize: typography.caption },
   prompt: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.caption },

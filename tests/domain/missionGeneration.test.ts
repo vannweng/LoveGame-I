@@ -14,7 +14,7 @@ test('newly created mission sends one analytics event with safe funnel propertie
   assert.deepEqual(analytics.events, [{
     name: 'mission_create',
     properties: {
-      days_before_due: 5, difficulty: 'normal', mission_id: 'generated-id', mission_source: 'system', mission_type: 'birthday',
+      days_before_due: 5, difficulty: 'normal', mission_id: 'generated-id', mission_source: 'system', mission_type: 'important_date',
     },
   }]);
 });
@@ -32,7 +32,7 @@ class StubGenerationService implements MissionGenerationService {
 
   async create() {
     return this.created
-      ? { analytics: { daysBeforeDue: 5, difficulty: 'normal' as const, missionSource: 'system' as const, missionType: 'birthday' as const }, created: true, missionId: 'generated-id', status: 'active' as const }
+      ? { analytics: { daysBeforeDue: 5, difficulty: 'normal' as const, missionSource: 'system' as const, missionType: 'important_date' as const }, created: true, missionId: 'generated-id', status: 'active' as const }
       : { created: false, missionId: 'generated-id' };
   }
 }

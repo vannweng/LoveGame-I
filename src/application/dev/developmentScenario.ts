@@ -46,7 +46,7 @@ export function getConfiguredDevelopmentNow(preset: DevDatePreset): Date {
 export function createConfiguredOnboarding(config: DevScenarioConfiguration, now: Date): OnboardingState {
   const offset = config.important === 'birthday-d30' ? 30 : config.important === 'birthday-d5' ? 5 : config.important === 'birthday-d1' ? 1 : 90;
   const relationshipStartDate = config.date === 'day100' ? localDateAtOffset(now, -99) : localDateAtOffset(now, -365);
-  return { status: 'completed', tutorialReward: null, profile: { partnerNickname: 'P2', relationshipStartDate, birthday: localDateAtOffset(now, offset), customImportantDates: [] } };
+  return { status: 'completed', relationshipMode: 'partnered', crushCandidates: [], activeCrushId: null, tutorialReward: null, profile: { partnerNickname: 'P2', relationshipStartDate, birthday: localDateAtOffset(now, offset), customImportantDates: [] } };
 }
 
 export function createConfiguredDailyGameplay(config: DevScenarioConfiguration): DailyGameplayState {
@@ -98,7 +98,7 @@ export function createDevelopmentSession(scenario: DevelopmentScenario, now = ne
 export function createDevelopmentOnboarding(scenario: DevelopmentScenario, now = new Date()): OnboardingState {
   const birthdayOffset = scenario === 'birthday-d30' ? 30 : scenario === 'birthday-d5' ? 5 : 90;
   return {
-    status: 'completed', tutorialReward: null,
+    status: 'completed', relationshipMode: 'partnered', crushCandidates: [], activeCrushId: null, tutorialReward: null,
     profile: { partnerNickname: 'P2', relationshipStartDate: localDateAtOffset(now, -365), birthday: localDateAtOffset(now, birthdayOffset), customImportantDates: [] },
   };
 }

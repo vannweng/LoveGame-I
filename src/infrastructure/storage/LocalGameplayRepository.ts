@@ -18,7 +18,7 @@ export class LocalGameplayRepository implements GameplayRepository {
         timezone: 'Asia/Taipei',
       },
       mission: birthdayDinnerMission,
-      gameState: saved?.gameState ?? initialGameState,
+      gameState: saved?.gameState ?? { ...initialGameState, exp: 0, combo: 0 },
       collectionState: saved?.collectionState ?? initialCollectionState,
       runHistory: saved?.runHistory ?? createRunHistory(new Date(), initialGameState.rankScore),
     };

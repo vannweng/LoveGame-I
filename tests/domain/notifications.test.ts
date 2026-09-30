@@ -77,3 +77,14 @@ test('denied notification permission leaves the game usable without a schedule',
   assert.equal(await new MissionReminderService(repository, notifications).sync(mission, new Date('2026-08-10T00:00:00+08:00')), 'permissionDenied');
   assert.equal(repository.value, null);
 });
+
+test('completed missions cancel persisted reminders idempotently', async () => {
+  const repository = new MemoryRepository();
+  const notifications = new FakeNotifications();
+  const service = new MissionReminderService(repository, notifications);
+  await service.sync(mission, new Date('2026-08-10T00:00:00+08:00'));
+  await service.cancel(mission.id);
+  await service.cancel(mission.id);
+  assert.equal(repository.value, null);
+  assert.deepEqual(notifications.cancelled, ['notification-1']);
+});

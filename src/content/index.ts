@@ -4,6 +4,7 @@ export { gameRules } from './gameRules';
 export { dailyGameplayConfig } from './dailyGameplayConfig';
 export { dailyActivityTemplates, milestoneActivityTemplates, weeklyChallengeTemplates } from './dailyActivities';
 export { missionTemplates } from './missionTemplates';
+export { getMissionTemplateIdsForEffort, importantDateEffortTemplates } from './importantDateEffort';
 export { relationshipProfileOptions } from './relationshipProfileOptions';
 export { sosGuides } from './sosGuides';
 export type { SosGuideLevel } from './sosGuides';

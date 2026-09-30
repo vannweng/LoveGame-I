@@ -8,3 +8,4 @@ export { RewardSummary } from './RewardSummary';
 export { StatusBadge } from './StatusBadge';
 export type { ProgressVariant } from './ProgressBar';
 export type { StatusVariant } from './StatusBadge';
+export { PageLayout } from './PageLayout';

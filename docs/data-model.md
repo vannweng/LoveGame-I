@@ -129,13 +129,14 @@ MVP 採 **單一關係存檔**。每一位使用者只使用固定的 `default` 
   ownerUserId, timezone, schemaVersion, createdAt, updatedAt
 
 /users/{userId}/saves/default/profile/current
-  partnerNickname, relationshipStartDate, birthday?, customImportantDates, updatedAt
+  partnerNickname, relationshipStartDate, birthday?, customImportantDates, importantDateEffort, updatedAt
+  customImportantDates[] = { id, title, date, recurrence, importance, effortLevel }
 
 /users/{userId}/saves/default/onboarding/state
   status, profile, tutorialReward, updatedAt
 
 /users/{userId}/saves/default/missions/{missionId}
-  ...Mission
+  ...Mission, sourceImportantDateId, eventDate, targetDate, effortLevel
 
 /users/{userId}/saves/default/resolutions/{resolutionId}
   ...MissionResolution
@@ -166,3 +167,8 @@ Firestore rules must ensure an authenticated user cannot access another user's s
 - Existing Missions keep time, importance, template, and ruleset snapshots.
 - Firestore transaction atomically persists resolution, mission status, progression, unlocks, and GG/revival changes.
 - All server writes use server timestamps; LocalDate values retain calendar semantics separately from timestamps.
+# 核心旅程本機存檔（schemaVersion 1）
+
+新增 `lovegame:journey:{userId}`：遊戲進度、稱號／墓碑、輪迴歷史、日常活動及 `chapters`。篇章以 `sourceId:occurrenceDate` 唯一識別，任務再加上 template ID；內容包含日期／路線／偏好／規則快照、各任務結果與 resolvedAt、completedAt、選填 reflection。
+
+此 schema 目前僅由 LocalJourneyRepository 保存，尚未宣告為可由 client 寫入的 Firestore schema。雲端權威交易與 migration gate 見 [核心旅程第一版](core-journey-v1.md)。

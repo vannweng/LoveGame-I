@@ -15,9 +15,6 @@ export class DevPreviewSession {
   }
 
   async clear(): Promise<void> {
-    await Promise.all([
-      secureStorage.removeItem(sessionKey),
-      ...['onboarding', 'activity-board', 'collection', 'progression', 'relationship', 'missions'].map((name) => secureStorage.removeItem(`lovegame:${name}:${devUser.id}`)),
-    ]);
+    await secureStorage.removeItem(sessionKey);
   }
 }

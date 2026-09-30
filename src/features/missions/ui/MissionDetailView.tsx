@@ -1,6 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { Mission } from '@/features/missions/domain';
+import type { RecommendationPreferences } from '@/features/recommendations/domain';
+import { MissionRecommendations } from '@/features/recommendations/ui/MissionRecommendations';
 import { getCopy } from '@/content';
 import { AppButton } from '@/shared/ui/AppButton';
 import { PixelCard } from '@/shared/ui/PixelCard';
@@ -12,12 +14,14 @@ interface MissionDetailViewProps {
   mission: Mission;
   onBack: () => void;
   onStartAction: () => void;
+  preferences: RecommendationPreferences;
 }
 
 export function MissionDetailView({
   mission,
   onBack,
   onStartAction,
+  preferences,
 }: MissionDetailViewProps) {
   return (
     <PageLayout>
@@ -26,6 +30,7 @@ export function MissionDetailView({
         <Text style={styles.description}>{getCopy(mission.template.descriptionKey)}</Text>
         <Text style={styles.reward}>{getCopy('MISSION_REWARD', { exp: mission.template.reward.success.expDelta })}</Text>
       </PixelCard>
+      {mission.template.missionType !== 'first_reminder' ? <MissionRecommendations missionType={mission.template.missionType} preferences={preferences} /> : null}
       <View style={styles.fill} />
       <AppButton label={getCopy('DAILY_START_REPORT')} onPress={onStartAction} />
       <AppButton label={getCopy('MISSION_BACK_LIST')} onPress={onBack} secondary />

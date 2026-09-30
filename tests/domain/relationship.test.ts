@@ -21,6 +21,9 @@ test('withRelationshipProfileDefaults hydrates optional relationship editor fiel
   });
 
   assert.equal(profile.relationshipStatus, 'dating');
+  assert.deepEqual(profile.importantDateEffort, {
+    birthday: 'balanced', marriageAnniversary: 'balanced', relationshipAnniversary: 'balanced',
+  });
   assert.deepEqual(profile.preferences, {
     style: 'romantic', preferenceTags: [], dietaryPreferences: [], landmines: [],
   });
@@ -33,7 +36,7 @@ test('custom important dates default to yearly survival events for existing prof
   });
 
   assert.deepEqual(profile.customImportantDates, [{
-    title: '第一次旅行', date: '2026-09-01', recurrence: 'yearly', importance: 'survival',
+    effortLevel: 'balanced', id: 'legacy-tyf54w', title: '第一次旅行', date: '2026-09-01', recurrence: 'yearly', importance: 'survival',
   }]);
 });
 
@@ -67,4 +70,38 @@ test('getRelationshipDashboardMetrics derives relationship and birthday metrics 
   assert.equal(result.relationshipDays, 366);
   assert.deepEqual(result.relationshipAnniversary, { daysRemaining: 0, occurrenceDate: '2026-08-13' });
   assert.deepEqual(result.birthday, { daysRemaining: 7, occurrenceDate: '2026-08-20' });
+  assert.deepEqual(result.nextImportantDate, {
+    daysRemaining: 0, kind: 'relationshipAnniversary', occurrenceDate: '2026-08-13', sourceId: 'relationshipAnniversary',
+  });
+});
+
+test('dashboard selects the nearest configured built-in date instead of always preferring birthday', () => {
+  const result = getRelationshipDashboardMetrics({
+    partnerNickname: 'P2', relationshipStartDate: '2020-12-01', marriageDate: '2024-08-15',
+    birthday: '2000-08-20', customImportantDates: [],
+  }, new Date('2026-08-13T10:00:00+08:00'));
+
+  assert.deepEqual(result.nextImportantDate, {
+    daysRemaining: 2, kind: 'marriageAnniversary', occurrenceDate: '2026-08-15', sourceId: 'marriageAnniversary',
+  });
+});
+
+test('dashboard uses a stable kind ordering when built-in dates occur on the same day', () => {
+  const result = getRelationshipDashboardMetrics({
+    partnerNickname: 'P2', relationshipStartDate: '2020-08-20', marriageDate: '2024-08-20',
+    birthday: '2000-08-20', customImportantDates: [],
+  }, new Date('2026-08-13T10:00:00+08:00'));
+
+  assert.equal(result.nextImportantDate?.kind, 'birthday');
+});
+
+test('dashboard includes custom dates when selecting the nearest occurrence', () => {
+  const result = getRelationshipDashboardMetrics({
+    partnerNickname: 'P2', relationshipStartDate: '2020-12-01', birthday: '2000-08-20',
+    customImportantDates: [{ id: 'first-trip', title: '第一次旅行', date: '2024-08-14', recurrence: 'yearly', importance: 'normal' }],
+  }, new Date('2026-08-13T10:00:00+08:00'));
+
+  assert.deepEqual(result.nextImportantDate, {
+    daysRemaining: 1, kind: 'custom', occurrenceDate: '2026-08-14', sourceId: 'custom:first-trip', title: '第一次旅行',
+  });
 });

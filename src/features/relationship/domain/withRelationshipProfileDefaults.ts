@@ -1,4 +1,5 @@
 import type { RelationshipPreferences, RelationshipProfile } from './models';
+import { getCustomImportantDateId } from './customImportantDate';
 
 const defaultPreferences: RelationshipPreferences = {
   style: 'romantic',
@@ -8,7 +9,9 @@ const defaultPreferences: RelationshipPreferences = {
 };
 
 export type RelationshipProfileWithDefaults = RelationshipProfile & {
+  importantDateEffort: Required<NonNullable<RelationshipProfile['importantDateEffort']>>;
   preferences: RelationshipPreferences;
+  relationshipStartDate: string;
   relationshipStatus: NonNullable<RelationshipProfile['relationshipStatus']>;
 };
 
@@ -20,10 +23,17 @@ export function withRelationshipProfileDefaults(profile: RelationshipProfile | n
     birthday: profile?.birthday,
     customImportantDates: (profile?.customImportantDates ?? []).map((date) => ({
       ...date,
+      id: getCustomImportantDateId(date),
+      effortLevel: date.effortLevel ?? 'balanced',
       recurrence: date.recurrence ?? 'yearly',
       importance: date.importance ?? 'survival',
     })),
     userNickname: profile?.userNickname,
+    importantDateEffort: {
+      birthday: profile?.importantDateEffort?.birthday ?? 'balanced',
+      marriageAnniversary: profile?.importantDateEffort?.marriageAnniversary ?? 'balanced',
+      relationshipAnniversary: profile?.importantDateEffort?.relationshipAnniversary ?? 'balanced',
+    },
     relationshipMotto: profile?.relationshipMotto,
     relationshipStatus: profile?.relationshipStatus ?? 'dating',
     preferences: {

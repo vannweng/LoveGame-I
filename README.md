@@ -14,13 +14,15 @@ npm run web
 
 請保持終端機持續執行，然後開啟 Expo 顯示的網址（通常為 `http://localhost:8081`）。開發模式可在登入頁選擇「DEV 預覽模式」，進入後以右下方的 `DEV` 選單切換 Seed Data／Scenario。
 
-目前所有 Feature Flag 預設開啟。若要在 Production 暫時關閉行動中心，請以環境變數啟動：
+目前行動中心、AI、calendar、restaurant Feature Flag 預設關閉。若要明確開啟尚未接通服務的行動中心示範選單，請以環境變數啟動：
 
 ```bash
-EXPO_PUBLIC_FEATURE_ACTION_HUB=false npm run web
+EXPO_PUBLIC_FEATURE_ACTION_HUB=true npm run web
 ```
 
 ## 文件索引
+
+- [核心旅程第一版：流程、規則與本機／雲端邊界](docs/core-journey-v1.md)
 
 - [架構設計](docs/architecture.md)
 - [遊戲規則 v0.2](docs/game-rules-v0.2.md)
@@ -39,4 +41,4 @@ EXPO_PUBLIC_FEATURE_ACTION_HUB=false npm run web
 - 任務結果由 server time 與存檔時區判定；UI 不可自行計算遊戲規則。
 - Rank Score 範圍為 -10 至 +10；降到 -10 進入可復活的 GG 狀態。
 - 重要日期可由模板預設或玩家自行指定為 survival / normal。
-- EXP 實際數值尚未定義，必須在 Progression 實作階段前確認。
+- EXP 數值以 `src/content/missionTemplates.ts` 的版本化規則為準。

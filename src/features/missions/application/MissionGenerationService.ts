@@ -2,7 +2,7 @@ export interface MissionGenerationAnalytics {
   daysBeforeDue: number;
   difficulty: 'normal';
   missionSource: 'system';
-  missionType: 'birthday';
+  missionType: 'important_date';
 }
 
 export interface MissionGenerationResult {
@@ -12,6 +12,13 @@ export interface MissionGenerationResult {
   status?: 'active' | 'scheduled';
 }
 
+export type ImportantDateMissionTemplateId =
+  | 'birthday-dinner'
+  | 'birthday-gift'
+  | 'birthday-cinema'
+  | 'birthday-card'
+  | 'birthday-itinerary';
+
 export interface MissionGenerationService {
-  create(templateId: 'birthday-dinner'): Promise<MissionGenerationResult>;
+  create(templateId: ImportantDateMissionTemplateId, sourceImportantDateId?: string): Promise<MissionGenerationResult>;
 }

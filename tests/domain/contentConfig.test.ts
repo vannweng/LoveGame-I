@@ -16,6 +16,17 @@ test('mission templates provide every result rule and content key', () => {
   });
 });
 
+test('important dates provide the five configured preparation missions', () => {
+  const templates = Object.values(missionTemplates).filter((template) => template.eventType === 'important_date');
+  assert.deepEqual(
+    templates.map(({ id, trigger }) => [id, trigger.eventOffsetDays, trigger.successDays]),
+    [
+      ['birthday-dinner', -29, 9], ['birthday-gift', -15, 5], ['birthday-cinema', -9, 3],
+      ['birthday-card', -5, 2], ['birthday-itinerary', -3, 1],
+    ],
+  );
+});
+
 test('copy resolves stable keys and interpolates dynamic values', () => {
   assert.equal(
     getCopy('HOME_IMPORTANT_DATE_ADVICE', { label: '生日', days: 5 }),
