@@ -6,6 +6,7 @@ import type { ClipboardService } from '@/infrastructure/clipboard';
 import { useResponsiveLayout } from '@/shared/hooks/useResponsiveLayout';
 import { borderWidth, colors, fonts, radius, spacing, typography } from '@/shared/theme/tokens';
 import { AppButton } from './AppButton';
+import { PixelIcon } from './PixelIcon';
 
 export function SosGuidePage({ clipboardService, onClose }: { clipboardService: ClipboardService; onClose: () => void }) {
   const [level, setLevel] = useState<SosGuideLevel>('level1');
@@ -17,7 +18,7 @@ export function SosGuidePage({ clipboardService, onClose }: { clipboardService: 
 }
 
 export function CloseButton({ label, onPress }: { label: string; onPress: () => void }) {
-  return <Pressable accessibilityLabel={label} accessibilityRole="button" onPress={onPress} style={styles.close}><Text style={styles.closeLabel}>×</Text></Pressable>;
+  return <Pressable accessibilityLabel={label} accessibilityRole="button" onPress={onPress} style={styles.close}><PixelIcon name="close" color={colors.text} size={36} /></Pressable>;
 }
 
 function Level({ active = false, compact, label, onPress }: { active?: boolean; compact: boolean; label: string; onPress: () => void }) {
@@ -35,7 +36,7 @@ function Panel({ accent = false, children, title, trailing }: { accent?: boolean
 const styles = StyleSheet.create({
   page: { backgroundColor: colors.pageBg, flex: 1 },
   header: { borderBottomColor: colors.accent, borderBottomWidth: borderWidth, flexDirection: 'row', gap: spacing.sm, justifyContent: 'space-between', padding: spacing.lg }, compactHeader: { paddingHorizontal: spacing.md }, headerCopy: { flex: 1, minWidth: 0 },
-  title: { color: colors.text, flexShrink: 1, fontFamily: fonts.body, fontSize: typography.sectionTitle, fontWeight: '700' }, sos: { color: colors.danger, fontFamily: fonts.number }, copy: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.caption, marginTop: spacing.sm }, close: { alignItems: 'center', flexShrink: 0, minHeight: 42, minWidth: 42 }, closeLabel: { color: colors.text, fontSize: 42, lineHeight: 36 },
+  title: { color: colors.text, flexShrink: 1, fontFamily: fonts.body, fontSize: typography.sectionTitle, fontWeight: '700' }, sos: { color: colors.danger, fontFamily: fonts.number }, copy: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.caption, marginTop: spacing.sm }, close: { alignItems: 'center', flexShrink: 0, minHeight: 42, minWidth: 42 },
   content: { gap: spacing.md, padding: spacing.lg, paddingBottom: spacing.xxl }, levels: { flexDirection: 'row', gap: spacing.sm }, level: { borderColor: colors.border, borderRadius: radius.xs, borderWidth: 1, flex: 1, minWidth: 0, padding: spacing.sm }, levelActive: { backgroundColor: colors.gold, borderColor: colors.gold }, levelLabel: { color: colors.textMuted, fontFamily: fonts.number, fontSize: typography.micro, textAlign: 'center' }, levelActiveLabel: { color: colors.ink },
   panel: { borderColor: colors.border, borderRadius: radius.xs, borderWidth: borderWidth, gap: spacing.sm, padding: spacing.md }, panelHeader: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm, justifyContent: 'space-between' }, accentPanel: { borderColor: colors.accent }, panelTitle: { color: colors.text, flex: 1, fontFamily: fonts.body, fontSize: typography.cardTitle, fontWeight: '700' }, accentTitle: { color: colors.accent, fontFamily: fonts.number }, copyButton: { alignItems: 'center', borderColor: colors.accent, borderRadius: radius.xs, borderWidth: 1, flexShrink: 0, minHeight: 32, minWidth: 40, paddingHorizontal: spacing.sm, justifyContent: 'center' }, copyButtonLabel: { color: colors.accent, fontFamily: fonts.number, fontSize: typography.caption }, muted: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.caption, lineHeight: 24 }, plan: { color: colors.text, fontFamily: fonts.body, fontSize: typography.caption, lineHeight: 25 }, apology: { color: colors.accent, fontFamily: fonts.body, fontSize: typography.caption, lineHeight: 25 }, quickActions: { flexDirection: 'row', gap: spacing.sm }, compactQuickActions: { flexDirection: 'column' }, quickAction: { flex: 1, minWidth: 0 },
 });
