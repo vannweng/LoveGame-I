@@ -18,7 +18,7 @@ export function useJourneyReminders(userId: string, state: JourneyState | null, 
         for (const task of chapter.tasks) {
           const id = `${userId}:${task.mission.id}`;
           if (task.result) await service.cancel(id);
-          else await service.sync({ ...task.mission, id });
+          else await service.sync({ ...task.mission, id }, new Date(), new Date(task.opensAt));
         }
       }
     }).catch(() => undefined); // Reminder failures must not block saved gameplay.

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { findTemplate, getDailyDrawOptions, getWeeklyDrawOptions, type ActivityBoardState, type ActivityTemplate } from '@/features/activities/domain';
@@ -10,6 +9,7 @@ import { PixelCard } from '@/shared/ui/PixelCard';
 import { PixelTag } from '@/shared/ui/PixelTag';
 import { PageLayout } from '@/shared/ui/PageLayout';
 import { colors, fonts, spacing, typography } from '@/shared/theme/tokens';
+import { useStoredDraft } from '@/shared/hooks/useStoredDraft';
 
 interface MissionBoardViewProps {
   board: ActivityBoardState;
@@ -33,8 +33,8 @@ interface MissionBoardViewProps {
 }
 
 export function MissionBoardView({ board, mission, relationshipDays, now, onCompleteDaily, onCompleteWeekly, onCancelDaily, onCancelWeekly, onRerollDaily, onOpenMainMission, onRerollWeekly, onSelectDaily, onSelectWeekly, onContinueDaily, onContinueWeekly, onShareWeekly, showMainMission, embedded = false }: MissionBoardViewProps) {
-  const [dailyReflection, setDailyReflection] = useState(board.daily.reflection ?? '');
-  const [weeklyReflection, setWeeklyReflection] = useState(board.weekly.reflection ?? '');
+  const [dailyReflection, setDailyReflection] = useStoredDraft(`daily:${board.daily.dayKey}:${board.daily.templateId ?? ''}`, board.daily.reflection ?? '');
+  const [weeklyReflection, setWeeklyReflection] = useStoredDraft(`weekly:${board.weekly.weekKey}:${board.weekly.templateId ?? ''}`, board.weekly.reflection ?? '');
   const daily = findTemplate(board.daily.templateId);
   const weekly = findTemplate(board.weekly.templateId);
   const isWeekend = [0, 6].includes(now.getDay());

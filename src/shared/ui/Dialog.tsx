@@ -11,13 +11,14 @@ interface DialogProps {
   children?: ReactNode;
   description?: string;
   tone?: 'danger' | 'info';
+  closeDisabled?: boolean;
 }
 
-export function Dialog({ children, description, onClose, title, tone = 'info', visible }: DialogProps) {
+export function Dialog({ children, description, onClose, title, tone = 'info', visible, closeDisabled = false }: DialogProps) {
   const accentColor = tone === 'danger' ? colors.danger : colors.accent;
   return (
     <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
-      <View style={styles.backdrop}><View accessibilityViewIsModal style={[styles.dialog, { borderColor: accentColor }]}><View style={styles.header}><Text style={styles.title}>{title}</Text><Pressable accessibilityLabel="關閉對話框" accessibilityRole="button" hitSlop={spacing.sm} onPress={onClose}><PixelIcon name="close" color={accentColor} size={28} /></Pressable></View>{description ? <Text style={styles.description}>{description}</Text> : null}{children}</View></View>
+      <View style={styles.backdrop}><View accessibilityViewIsModal style={[styles.dialog, { borderColor: accentColor }]}><View style={styles.header}><Text style={styles.title}>{title}</Text><Pressable disabled={closeDisabled} accessibilityLabel="關閉對話框" accessibilityRole="button" hitSlop={spacing.sm} onPress={onClose} style={styles.closeButton}><PixelIcon name="close" color={accentColor} size={28} /></Pressable></View>{description ? <Text style={styles.description}>{description}</Text> : null}{children}</View></View>
     </Modal>
   );
 }
@@ -27,5 +28,6 @@ const styles = StyleSheet.create({
   dialog: { backgroundColor: colors.cardBg, borderRadius: radius.sm, borderWidth, gap: spacing.md, maxWidth: 480, padding: spacing.lg, width: '100%' },
   header: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.sm, justifyContent: 'space-between' },
   title: { color: colors.text, flex: 1, fontFamily: fonts.body, fontSize: typography.sectionTitle, fontWeight: '700' },
+  closeButton: { alignItems: 'center', justifyContent: 'center', minHeight: 48, minWidth: 48 },
   description: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.body, lineHeight: 24 },
 });

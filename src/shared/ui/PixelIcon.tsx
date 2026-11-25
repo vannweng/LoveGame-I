@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 // Pixelarticons by Gerrit Halfmann, MIT license.
@@ -18,5 +19,5 @@ const paths = {
 export type PixelIconName = keyof typeof paths;
 
 export function PixelIcon({ name, color, size = 24 }: { name: PixelIconName; color: string; size?: number }) {
-  return <Svg width={size} height={size} viewBox="0 0 24 24" accessible={false}><Path d={paths[name]} fill={color} /></Svg>;
+  return <Svg width={size} height={size} viewBox="0 0 24 24" accessible={Platform.OS === 'web' ? undefined : false} aria-hidden><Path d={paths[name]} fill={color} /></Svg>;
 }

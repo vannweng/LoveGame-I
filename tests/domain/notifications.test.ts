@@ -41,6 +41,13 @@ test('planMissionReminder schedules one day before the success deadline', () => 
   assert.equal(plan?.scheduledAt.toISOString(), '2026-08-13T16:00:00.000Z');
 });
 
+test('journey reminder can use its suggested action date without changing the deadline', () => {
+  const actionDate = new Date('2026-08-01T00:00:00+08:00');
+  const plan = planMissionReminder(mission, new Date('2026-07-30T00:00:00+08:00'), actionDate);
+  assert.equal(plan?.scheduledAt.toISOString(), actionDate.toISOString());
+  assert.equal(planMissionReminder(mission, actionDate, actionDate), null);
+});
+
 test('reminder sync does not schedule an unchanged mission twice', async () => {
   const repository = new MemoryRepository();
   const notifications = new FakeNotifications();

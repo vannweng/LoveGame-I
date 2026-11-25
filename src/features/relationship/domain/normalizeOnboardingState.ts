@@ -16,6 +16,7 @@ export function normalizeOnboardingState(value: unknown): OnboardingState {
     activeCrushId: state.activeCrushId ?? null,
     profile: state.profile ?? null,
     tutorialReward: state.tutorialReward ?? null,
+    ...(state.pendingTutorial ? { pendingTutorial: state.pendingTutorial } : {}),
   };
 }
 

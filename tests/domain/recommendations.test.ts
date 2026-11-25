@@ -12,12 +12,33 @@ test('every important-date mission type has built-in recommendations', () => {
   missionTypes.forEach((missionType) => assert.ok(recommendForMission(missionType, basePreferences).length > 0));
 });
 
-test('preferences rank matching recommendations before generic candidates', () => {
+test('gift and dinner recommendations have direct product or booking destinations and ascending reference prices', () => {
+  for (const missionType of ['gift_order', 'date_dinner'] as const) {
+    const recommendations = recommendForMission(missionType, basePreferences);
+    assert.ok(recommendations.length >= 1 && recommendations.length <= 5);
+    assert.ok(recommendations.every((item) => item.destination && item.price));
+    assert.deepEqual(recommendations.map((item) => item.price?.amountTwd),
+      [...recommendations.map((item) => item.price?.amountTwd)].sort((a, b) => (a ?? 0) - (b ?? 0)));
+    for (const recommendation of recommendations) {
+      const destination = recommendation.destination;
+      assert.ok(destination);
+      const url = new URL(destination.url);
+      assert.equal(url.protocol, 'https:');
+      assert.equal(url.hostname, missionType === 'gift_order' ? 'www.pinkoi.com' : 'tw.eztable.com');
+      assert.match(url.pathname, missionType === 'gift_order' ? /^\/product\/[^/]+$/ : /^\/restaurant\/\d+$/);
+      assert.equal(recommendation.price?.basis, missionType === 'gift_order' ? 'product' : 'bookingFrom');
+      if (missionType === 'date_dinner') assert.equal(recommendation.city, '台北市');
+    }
+  }
+  assert.ok(recommendForMission('card_writing', basePreferences).every((item) => !item.destination));
+});
+
+test('gift price order takes precedence while still reporting matching preferences', () => {
   const recommendations = recommendForMission('gift_order', {
     ...basePreferences, preferenceTags: ['精緻飾品'],
   });
-  assert.equal(recommendations[0].id, 'gift-jewelry');
-  assert.deepEqual(recommendations[0].matchedPreferences, ['精緻飾品']);
+  assert.equal(recommendations[0].id, 'gift-plush');
+  assert.deepEqual(recommendations.find((item) => item.id === 'gift-earrings')?.matchedPreferences, ['精緻飾品']);
 });
 
 test('dietary restrictions and landmines remove blocked recommendations', () => {
@@ -27,7 +48,7 @@ test('dietary restrictions and landmines remove blocked recommendations', () => 
   const gifts = recommendForMission('gift_order', {
     ...basePreferences, landmines: ['討厭玩偶/娃娃'],
   });
-  assert.deepEqual(dinner.map((item) => item.id), ['dinner-vegetarian']);
+  assert.deepEqual(dinner, []);
   assert.equal(gifts.some((item) => item.id === 'gift-plush'), false);
 });
 

@@ -2,6 +2,8 @@ import type { GameplayProgress } from '@/features/missions/data/GameplayReposito
 import type { Mission, MissionResult } from '@/features/missions/domain';
 import type { ImportantDateEffortLevel, RelationshipPreferences } from '@/features/relationship/domain';
 import type { ActivityBoardState } from '@/features/activities/domain';
+import type { CinemaReservation, DinnerReservation, ImportantDateItinerary } from './itineraryModels';
+export type { BookingReport, CinemaReservation, DinnerReservation, ImportantDateItinerary, ItineraryItem, PlanLocation } from './itineraryModels';
 
 export interface JourneyEvent {
   sourceId: string;
@@ -14,10 +16,13 @@ export interface JourneyEvent {
 
 export interface JourneyTask {
   mission: Mission;
+  /** Persisted legacy field: suggested reminder time, never an action gate. */
   opensAt: string;
   cardDraft?: string;
   result?: MissionResult;
   resolvedAt?: string;
+  dinnerReservation?: DinnerReservation;
+  cinemaReservation?: CinemaReservation;
 }
 
 export interface JourneyChapter {
@@ -29,6 +34,9 @@ export interface JourneyChapter {
   reflection?: string;
   preferences: RelationshipPreferences;
   tasks: JourneyTask[];
+  itinerary?: ImportantDateItinerary;
+  dinnerReservation?: DinnerReservation;
+  cinemaReservation?: CinemaReservation;
   rulesetVersion: '0.2';
 }
 

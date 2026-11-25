@@ -13,7 +13,7 @@ interface BottomSheetProps extends PropsWithChildren {
 export function BottomSheet({ children, onClose, title, visible }: BottomSheetProps) {
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
-      <View style={styles.backdrop}><Pressable accessibilityLabel="關閉面板" onPress={onClose} style={styles.dismiss} /><View accessibilityViewIsModal style={styles.sheet}><View style={styles.handle} /><View style={styles.header}><Text style={styles.title}>{title}</Text><Pressable accessibilityLabel="關閉面板" accessibilityRole="button" hitSlop={spacing.sm} onPress={onClose}><PixelIcon name="close" color={colors.accent} size={28} /></Pressable></View><ScrollView contentContainerStyle={styles.content}>{children}</ScrollView></View></View>
+      <View style={styles.backdrop}><Pressable accessibilityLabel="關閉面板" onPress={onClose} style={styles.dismiss} /><View accessibilityViewIsModal style={styles.sheet}><View style={styles.handle} /><View style={styles.header}><Text style={styles.title}>{title}</Text><Pressable accessibilityLabel="關閉面板" accessibilityRole="button" hitSlop={spacing.sm} onPress={onClose}><PixelIcon name="close" color={colors.accent} size={32} /></Pressable></View><ScrollView contentContainerStyle={styles.content}>{children}</ScrollView></View></View>
     </Modal>
   );
 }
@@ -21,7 +21,7 @@ export function BottomSheet({ children, onClose, title, visible }: BottomSheetPr
 const styles = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: 'flex-end' },
   dismiss: { backgroundColor: 'rgba(0, 0, 0, 0.7)', flex: 1 },
-  sheet: { backgroundColor: colors.pageBg, borderColor: colors.accent, borderTopLeftRadius: radius.sm, borderTopRightRadius: radius.sm, borderWidth, gap: spacing.md, maxHeight: '85%', padding: spacing.lg },
+  sheet: { backgroundColor: colors.pageBg, borderColor: colors.accent, borderTopLeftRadius: radius.sm, borderTopRightRadius: radius.sm, borderWidth, gap: spacing.md, maxHeight: '90%', padding: spacing.lg },
   handle: { alignSelf: 'center', backgroundColor: colors.border, height: spacing.xs, width: spacing.xxl },
   header: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
   title: { color: colors.text, flex: 1, fontFamily: fonts.body, fontSize: typography.sectionTitle, fontWeight: '700' },

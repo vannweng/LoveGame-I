@@ -19,5 +19,5 @@ export function PageLayout({ children }: PropsWithChildren) {
 
 const styles = StyleSheet.create({
   safeArea: { backgroundColor: colors.pageBg, flex: 1 },
-  content: { alignSelf: 'center', flexGrow: 1, gap: spacing.lg, maxWidth: 720, minWidth: 0, padding: spacing.lg, paddingBottom: spacing.xxl, width: '100%' },
+  content: { alignSelf: 'center', flexGrow: 1, gap: spacing.xl, maxWidth: 720, minWidth: 0, padding: spacing.xl, paddingBottom: spacing.xxl, width: '100%' },
 });

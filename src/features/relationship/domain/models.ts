@@ -1,4 +1,6 @@
 import type { GameState, RewardResult } from '../../missions/domain';
+import type { CollectionState } from '@/features/collection/domain';
+import type { RunHistoryState } from '@/game/run';
 
 export interface Relationship {
   id: string;
@@ -66,4 +68,9 @@ export interface OnboardingState {
   activeCrushId: CrushCandidate['id'] | null;
   profile: RelationshipProfile | null;
   tutorialReward: TutorialReward | null;
+  pendingTutorial?: {
+    tutorialReward: TutorialReward;
+    collectionState: CollectionState;
+    runHistory: RunHistoryState;
+  };
 }

@@ -3,8 +3,11 @@ import { getMissionTemplateIdsForEffort } from '@/content/importantDateEffort';
 import { completeMission } from '@/features/missions/domain/completeMission';
 import type { ImportantDateEffortLevel, RelationshipPreferences } from '@/features/relationship/domain';
 import { recordRunResolution } from '@/game/run';
-import type { JourneyChapter, JourneyEvent, JourneyState, JourneyTask } from './models';
+import type { ItineraryItem, JourneyChapter, JourneyEvent, JourneyState, JourneyTask } from './models';
 import { chapterId, dateAtOffset } from './journeyEvents';
+import { buildItinerary, createSuggestedItinerary, updateItineraryItem } from './itinerary';
+import { findFreeReplacement } from './itineraryActivities';
+export { saveBookingReport, saveCinemaReservation, saveDinnerReservation } from './journeyReservations';
 
 export function startChapter(state: JourneyState, event: JourneyEvent, effort: ImportantDateEffortLevel, preferences: RelationshipPreferences, now: Date): JourneyState {
   const id = chapterId(event);
@@ -21,19 +24,24 @@ export function startChapter(state: JourneyState, event: JourneyEvent, effort: I
     };
   });
   const preferenceSnapshot = { ...preferences, preferenceTags: [...preferences.preferenceTags], dietaryPreferences: [...preferences.dietaryPreferences], landmines: [...preferences.landmines] };
-  const chapter: JourneyChapter = { id, event: { ...event }, effort, preferences: preferenceSnapshot, startedAt: now.toISOString(), tasks, rulesetVersion: '0.2' };
+  const chapter: JourneyChapter = {
+    id, event: { ...event }, effort, preferences: preferenceSnapshot, startedAt: now.toISOString(), tasks,
+    itinerary: createSuggestedItinerary(event, preferenceSnapshot), rulesetVersion: '0.2',
+  };
   return { ...state, chapters: [...state.chapters, chapter] };
 }
 
-export function resolveChapterTask(state: JourneyState, chapterId: string, missionId: string, now: Date): JourneyState {
+export function resolveChapterTask(state: JourneyState, chapterId: string, missionId: string, now: Date, cardDraft?: string): JourneyState {
   const chapter = state.chapters.find((item) => item.id === chapterId);
   const task = chapter?.tasks.find((item) => item.mission.id === missionId);
   if (!chapter || !task) throw new Error('找不到這個任務，請回篇章重試。');
   if (task.result) return state;
   if (state.gameState.status === 'gg') throw new Error('請先完成重生，再回來處理任務。');
-  if (now < new Date(task.opensAt)) throw new Error('這個任務尚未開放。');
+  if (now < task.mission.failAt && task.mission.template.missionType === 'date_dinner' && !task.dinnerReservation) throw new Error('請先回報已預訂的餐廳與訂位時間。');
+  if (now < task.mission.failAt && task.mission.template.missionType === 'cinema_booking' && !task.cinemaReservation) throw new Error('請先回報影城地點、開演時間與片長。');
   const outcome = completeMission(task.mission, state.gameState, state.collectionState, now);
-  const tasks = chapter.tasks.map((item) => item === task ? { ...item, result: outcome.result, resolvedAt: now.toISOString() } : item);
+  const cardContent = task.mission.template.id === 'birthday-card' && cardDraft !== undefined ? { cardDraft: cardDraft.slice(0, 500) } : {};
+  const tasks = chapter.tasks.map((item) => item === task ? { ...item, ...cardContent, result: outcome.result, resolvedAt: now.toISOString() } : item);
   return {
     ...state, gameState: outcome.gameState, collectionState: outcome.collectionState,
     runHistory: recordRunResolution(state.runHistory, { result: outcome.result, rankScore: outcome.gameState.rankScore, occurredAt: now, deathCause: task.mission.template.titleKey }),
@@ -58,6 +66,26 @@ export function saveChapterTaskDraft(state: JourneyState, chapterId: string, mis
   return { ...state, chapters: state.chapters.map((item) => item === chapter ? { ...item, tasks } : item) };
 }
 
+export function saveItineraryItem(state: JourneyState, chapterId: string, nextItem: ItineraryItem): JourneyState {
+  const chapter = state.chapters.find((item) => item.id === chapterId);
+  if (!chapter) throw new Error('找不到這個篇章，請回重要日重試。');
+  const itinerary = updateItineraryItem(chapter.itinerary ?? createSuggestedItinerary(chapter.event), nextItem);
+  return { ...state, chapters: state.chapters.map((item) => item === chapter ? { ...item, itinerary } : item) };
+}
+
+export function replaceFreeActivity(state: JourneyState, id: string, itemId: string): JourneyState {
+  const chapter = state.chapters.find((item) => item.id === id);
+  if (!chapter) throw new Error('找不到這個篇章。');
+  const itinerary = chapter.itinerary ?? buildItinerary(chapter);
+  const current = itinerary.items.find((item) => item.id === itemId && item.free && item.kind !== 'transport');
+  if (!current) throw new Error('只有免費建議景點可以更換。');
+  const place = findFreeReplacement(itinerary.items, current, chapter.preferences);
+  if (!place) throw new Error('此時段沒有其他順路且能準時抵達的免費景點；可以改用手動調整。');
+  const updated = { ...current, location: place, title: place.name, description: place.description ?? '', source: 'user' as const };
+  const next = { ...itinerary, items: itinerary.items.map((item) => item.id === current.id ? updated : item) };
+  return { ...state, chapters: state.chapters.map((item) => item.id === id ? { ...item, itinerary: buildItinerary({ ...item, itinerary: next }) } : item) };
+}
+
 export function previousChapter(state: JourneyState, event: JourneyEvent): JourneyChapter | undefined {
   return state.chapters.filter((chapter) => chapter.event.sourceId === event.sourceId && chapter.event.date < event.date && chapter.completedAt)
     .sort((a, b) => b.event.date.localeCompare(a.event.date))[0];
@@ -65,8 +93,8 @@ export function previousChapter(state: JourneyState, event: JourneyEvent): Journ
 
 export function taskStatus(task: JourneyTask, now: Date): 'scheduled' | 'success' | 'late' | 'fail' | 'done' {
   if (task.result) return 'done';
-  if (now < new Date(task.opensAt)) return 'scheduled';
   if (now >= task.mission.failAt) return 'fail';
+  if (now < new Date(task.opensAt)) return 'scheduled';
   return now < task.mission.successUntil ? 'success' : 'late';
 }
 

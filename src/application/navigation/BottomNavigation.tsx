@@ -15,12 +15,13 @@ const tabs: { key: BottomTab; label: string; icon: PixelIconName }[] = [
 
 export function BottomNavigation({ activeTab, flags, onSelect }: { activeTab: BottomTab; flags: FeatureFlags; onSelect: (tab: BottomTab) => void }) {
   const enabledTabs = tabs.filter((tab) => tab.key !== 'actions' || flags.actionHub);
-  return <View style={styles.nav}>{enabledTabs.map((tab) => <Pressable key={tab.key} accessibilityRole="tab" onPress={() => onSelect(tab.key)} style={styles.item}><PixelIcon name={tab.icon} color={activeTab === tab.key ? colors.accent : colors.textMuted} size={24} /><Text style={[styles.label, activeTab === tab.key && styles.active]}>{tab.label}</Text></Pressable>)}</View>;
+  return <View style={styles.nav}>{enabledTabs.map((tab) => <Pressable key={tab.key} accessibilityRole="tab" accessibilityState={{ selected: activeTab === tab.key }} onPress={() => onSelect(tab.key)} style={[styles.item, activeTab === tab.key && styles.selected]}><PixelIcon name={tab.icon} color={activeTab === tab.key ? colors.accent : colors.textMuted} size={24} /><Text style={[styles.label, activeTab === tab.key && styles.active]}>{tab.label}</Text></Pressable>)}</View>;
 }
 
 const styles = StyleSheet.create({
-  nav: { backgroundColor: colors.pageBg, borderTopColor: colors.border, borderTopWidth: borderWidth, flexDirection: 'row', justifyContent: 'space-around', paddingBottom: spacing.sm, paddingTop: spacing.xs },
-  item: { alignItems: 'center', flex: 1, gap: 2, minWidth: 0, paddingVertical: spacing.xs },
+  nav: { backgroundColor: colors.cardBg, borderTopColor: colors.border, borderTopWidth: borderWidth, flexDirection: 'row', justifyContent: 'space-around', paddingBottom: spacing.sm, paddingTop: spacing.sm },
+  item: { alignItems: 'center', flex: 1, gap: spacing.xs, minHeight: 56, minWidth: 0, paddingVertical: spacing.xs },
   label: { color: colors.textMuted, fontFamily: fonts.number, fontSize: typography.micro, textAlign: 'center' },
+  selected: { backgroundColor: colors.subBoxBg },
   active: { color: colors.accent },
 });

@@ -11,8 +11,8 @@ export class MissionReminderService {
     private readonly notifications: MissionNotificationService,
   ) {}
 
-  async sync(mission: Mission, now = new Date()): Promise<ReminderSyncResult> {
-    const planned = planMissionReminder(mission, now);
+  async sync(mission: Mission, now = new Date(), reminderAt?: Date): Promise<ReminderSyncResult> {
+    const planned = planMissionReminder(mission, now, reminderAt);
     const existing = await this.repository.get(mission.id);
     if (existing?.fingerprint === planned?.fingerprint) return 'unchanged';
 

@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   label: { color: colors.text, fontFamily: fonts.body, fontSize: typography.cardTitle, fontWeight: '700' },
   dangerLabel: { color: colors.danger },
   styleRow: { flexDirection: 'row', gap: spacing.sm },
-  styleOption: { alignItems: 'center', borderColor: colors.border, borderRadius: radius.xs, borderWidth, flex: 1, minHeight: 44, justifyContent: 'center', padding: spacing.sm },
+  styleOption: { alignItems: 'center', borderColor: colors.border, borderRadius: radius.xs, borderWidth, flex: 1, minHeight: 48, justifyContent: 'center', padding: spacing.sm },
   activeStyle: { backgroundColor: colors.accent, borderColor: colors.accent },
   styleText: { color: colors.text, fontFamily: fonts.number, fontSize: typography.caption },
   activeStyleText: { color: colors.ink },

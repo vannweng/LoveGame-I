@@ -1,7 +1,7 @@
 import type { Mission, MissionReminderPlan } from './models';
 
-export function planMissionReminder(mission: Mission, now: Date): MissionReminderPlan | null {
-  const scheduledAt = new Date(
+export function planMissionReminder(mission: Mission, now: Date, reminderAt?: Date): MissionReminderPlan | null {
+  const scheduledAt = reminderAt ?? new Date(
     mission.successUntil.getTime() - mission.template.trigger.reminderOffsetDays * 86_400_000,
   );
 

@@ -24,7 +24,7 @@ export function selectDailyActivity(state: ActivityBoardState, relationshipDays:
   const normalized = normalizeActivityBoard(state, now);
   const valid = getDailyDrawOptions(normalized, relationshipDays, now).some((template) => template.id === templateId);
   const deckTemplateIds = normalized.daily.deckTemplateIds.length ? normalized.daily.deckTemplateIds : getDailyDrawOptions(normalized, relationshipDays, now).map((template) => template.id);
-  return !valid || normalized.daily.templateId || normalized.daily.completedTemplateIds.includes(templateId) ? normalized : { ...normalized, daily: { ...normalized.daily, deckTemplateIds, templateId } };
+  return !valid || normalized.daily.templateId || normalized.daily.completedTemplateIds.includes(templateId) ? normalized : { ...normalized, daily: { ...normalized.daily, deckTemplateIds, templateId, reflection: null } };
 }
 
 export function rerollDailyActivity(state: ActivityBoardState, relationshipDays: number, now: Date): ActivityBoardState {
@@ -43,7 +43,7 @@ export function selectWeeklyChallenge(state: ActivityBoardState, templateId: str
   const normalized = normalizeActivityBoard(state, now);
   const valid = [0, 6].includes(now.getDay()) && getWeeklyDrawOptions(normalized, now).some((template) => template.id === templateId);
   const deckTemplateIds = normalized.weekly.deckTemplateIds.length ? normalized.weekly.deckTemplateIds : getWeeklyDrawOptions(normalized, now).map((template) => template.id);
-  return !valid || normalized.weekly.templateId || normalized.weekly.completedTemplateIds.includes(templateId) ? normalized : { ...normalized, weekly: { ...normalized.weekly, deckTemplateIds, templateId } };
+  return !valid || normalized.weekly.templateId || normalized.weekly.completedTemplateIds.includes(templateId) ? normalized : { ...normalized, weekly: { ...normalized.weekly, deckTemplateIds, templateId, reflection: null } };
 }
 
 export function rerollWeeklyChallenge(state: ActivityBoardState, now: Date): ActivityBoardState {

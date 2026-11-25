@@ -7,7 +7,7 @@ import { AppButton, PageLayout, PixelCard } from '@/shared/ui';
 import { colors, fonts, typography } from '@/shared/theme/tokens';
 import { nextTask, taskStatus } from '../domain/journey';
 import type { JourneyEvent, JourneyState } from '../domain/models';
-import { chapterProgress, countdownCopy, getJourneyCardEvents } from './journeyCardPresentation';
+import { chapterProgress, countdownCopy, getJourneyCardEvents, taskAccent } from './journeyCardPresentation';
 
 export function JourneyQuestView({ events, footer, now, onDates, onOpen, onStart, state }: { events: JourneyEvent[]; footer?: ReactNode; now: Date; onDates: () => void; onOpen: (event: JourneyEvent) => void; onStart: (event: JourneyEvent) => void; state: JourneyState }) {
   const cards = getJourneyCardEvents(events, state, now);
@@ -16,7 +16,7 @@ export function JourneyQuestView({ events, footer, now, onDates, onOpen, onStart
     {cards.map((event) => {
       const chapter = state.chapters.find((item) => item.event.sourceId === event.sourceId && item.event.date === event.date);
       const task = chapter ? nextTask(chapter, now) : null;
-      return <PixelCard accentColor={chapter ? colors.orange : colors.accent} key={`${event.sourceId}:${event.date}`} subtitle={`${event.date} ·`} title={event.title}>
+      return <PixelCard accentColor={task ? taskAccent(taskStatus(task, now)) : chapter ? colors.safe : colors.accent} key={`${event.sourceId}:${event.date}`} subtitle={`${event.date} ·`} title={event.title}>
         <Text style={styles.copy}>{countdownCopy(event, chapter, now)}</Text>
         {chapter && !chapter.completedAt ? <Text style={styles.copy}>{chapterProgress(chapter)}</Text> : null}
         <Text style={styles.copy}>{task ? `${getCopy(task.mission.template.titleKey)} · ${copy.status[taskStatus(task, now)]}` : chapter?.completedAt ? copy.questCompleted : copy.questReady}</Text>
@@ -30,7 +30,7 @@ export function JourneyQuestView({ events, footer, now, onDates, onOpen, onStart
 
 const styles = StyleSheet.create({
   copy: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.body, lineHeight: 24 },
-  title: { color: colors.accent, fontFamily: fonts.body, fontSize: 22 },
+  title: { color: colors.accent, fontFamily: fonts.body, fontSize: typography.hero },
   routeHint: { alignItems: 'baseline', flexDirection: 'row', flexWrap: 'wrap' },
   link: { color: colors.accent, fontFamily: fonts.body, fontSize: typography.body, textDecorationLine: 'underline' },
 });

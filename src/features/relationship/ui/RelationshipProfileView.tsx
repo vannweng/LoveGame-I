@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { getCopy } from '@/content';
-import type { RelationshipProfile } from '@/features/relationship/domain';
+import type { RelationshipMode, RelationshipProfile } from '@/features/relationship/domain';
 import { PixelCard } from '@/shared/ui/PixelCard';
 import { PixelTag } from '@/shared/ui/PixelTag';
 import { PageLayout } from '@/shared/ui/PageLayout';
@@ -13,10 +13,12 @@ export type RelationshipEditor = 'basic' | 'dates' | 'preferences';
 interface RelationshipProfileViewProps {
   profile: RelationshipProfile | null;
   userName: string;
+  relationshipMode: RelationshipMode;
   onOpenEditor: (editor: RelationshipEditor) => void;
 }
 
-export function RelationshipProfileView({ profile, userName, onOpenEditor }: RelationshipProfileViewProps) {
+export function RelationshipProfileView({ profile, userName, relationshipMode, onOpenEditor }: RelationshipProfileViewProps) {
+  const single = relationshipMode === 'single';
   const partnerName = profile?.partnerNickname || getCopy('RELATIONSHIP_DEFAULT_P2');
   const anniversaryLabel = profile?.relationshipStatus === 'married' ? getCopy('RELATIONSHIP_MARRIED_DATE') : getCopy('RELATIONSHIP_DATING_DATE');
   const anniversaryDate = profile?.relationshipStatus === 'married' ? profile?.marriageDate : profile?.relationshipStartDate;
@@ -24,15 +26,15 @@ export function RelationshipProfileView({ profile, userName, onOpenEditor }: Rel
   const preferences = getPreferenceItems(profile);
   return (
     <PageLayout>
-      <QuickReadCard accentColor={colors.pink} editor="basic" onPress={onOpenEditor} subtitle={getCopy('RELATIONSHIP_QUICK_BASIC_SUBTITLE')} title={getCopy('RELATIONSHIP_QUICK_BASIC')}>
-        <Text style={styles.primary}>{userName} ♥ {partnerName}</Text>
-        <Text style={styles.detail}>{anniversaryLabel} · {anniversaryDate || getCopy('RELATIONSHIP_NO_RELATIONSHIP_DATE')}</Text>
+      <QuickReadCard accentColor={colors.border} editor="basic" onPress={onOpenEditor} subtitle={getCopy('RELATIONSHIP_QUICK_BASIC_SUBTITLE')} title={getCopy('RELATIONSHIP_QUICK_BASIC')}>
+        <Text style={styles.primary}>{profile?.userNickname || userName}{single ? profile?.partnerNickname ? ` · 曖昧對象：${profile.partnerNickname}` : ' · 單身練習' : ` ♥ ${partnerName}`}</Text>
+        <Text style={styles.detail}>{single ? '紀念起始日（選填）' : anniversaryLabel} · {anniversaryDate || (single ? '尚未設定' : getCopy('RELATIONSHIP_NO_RELATIONSHIP_DATE'))}</Text>
         <Text numberOfLines={1} style={styles.muted}>{profile?.relationshipStatus === 'married' ? `${getCopy('RELATIONSHIP_DATING_DATE')} · ${profile.relationshipStartDate}` : profile?.relationshipMotto || getCopy('RELATIONSHIP_MOTTO_PLACEHOLDER')}</Text>
       </QuickReadCard>
-      <QuickReadCard accentColor={colors.gold} editor="dates" onPress={onOpenEditor} subtitle={getCopy('RELATIONSHIP_QUICK_DATES_SUBTITLE')} title={getCopy('RELATIONSHIP_QUICK_DATES')}>
+      <QuickReadCard accentColor={colors.accent} editor="dates" onPress={onOpenEditor} subtitle={getCopy('RELATIONSHIP_QUICK_DATES_SUBTITLE')} title={getCopy('RELATIONSHIP_QUICK_DATES')}>
         {dates.length ? <View style={styles.tags}>{dates.map((date) => <PixelTag color={colors.gold} key={`${date.label}-${date.date}`} label={`${date.label} · ${date.date}`} size="S" />)}</View> : <Text style={styles.muted}>{getCopy('RELATIONSHIP_NO_CUSTOM_DATES')}</Text>}
       </QuickReadCard>
-      <QuickReadCard accentColor={colors.danger} editor="preferences" onPress={onOpenEditor} subtitle={getCopy('RELATIONSHIP_QUICK_PREFERENCES_SUBTITLE')} title={getCopy('RELATIONSHIP_QUICK_PREFERENCES')}>
+      <QuickReadCard accentColor={colors.border} editor="preferences" onPress={onOpenEditor} subtitle={getCopy('RELATIONSHIP_QUICK_PREFERENCES_SUBTITLE')} title={getCopy('RELATIONSHIP_QUICK_PREFERENCES')}>
         <Text style={styles.primary}>{profile?.preferences?.style === 'practical' ? getCopy('RELATIONSHIP_STYLE_PRACTICAL') : getCopy('RELATIONSHIP_STYLE_ROMANTIC')}</Text>
         {preferences.length ? <View style={styles.tags}>{preferences.map((item) => <PixelTag color={item.danger ? colors.danger : colors.accent} key={item.label} label={item.label} size="S" />)}</View> : <Text style={styles.muted}>{getCopy('RELATIONSHIP_NO_PREFERENCES')}</Text>}
       </QuickReadCard>
@@ -40,7 +42,7 @@ export function RelationshipProfileView({ profile, userName, onOpenEditor }: Rel
   );
 }
 
-function QuickReadCard({ accentColor, children, editor, onPress, subtitle, title }: {
+function QuickReadCard({ accentColor, children, editor, onPress, title }: {
   accentColor: string;
   children: ReactNode;
   editor: RelationshipEditor;
@@ -48,7 +50,7 @@ function QuickReadCard({ accentColor, children, editor, onPress, subtitle, title
   subtitle: string;
   title: string;
 }) {
-  return <Pressable accessibilityRole="button" onPress={() => onPress(editor)}><PixelCard accentColor={accentColor} subtitle={subtitle} title={title} trailing={<Text style={[styles.open, { color: accentColor }]}>{getCopy('RELATIONSHIP_OPEN_EDITOR')} →</Text>}><View style={styles.cardContent}>{children}</View></PixelCard></Pressable>;
+  return <Pressable accessibilityRole="button" onPress={() => onPress(editor)}><PixelCard accentColor={accentColor} title={title} trailing={<Text style={[styles.open, { color: colors.accent }]}>{getCopy('RELATIONSHIP_OPEN_EDITOR')} →</Text>}><View style={styles.cardContent}>{children}</View></PixelCard></Pressable>;
 }
 
 function getImportantDates(profile: RelationshipProfile | null): { label: string; date: string }[] {
@@ -73,6 +75,6 @@ const styles = StyleSheet.create({
   cardContent: { gap: spacing.xs },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   primary: { color: colors.text, fontFamily: fonts.body, fontSize: typography.cardTitle, fontWeight: '700' },
-  detail: { color: colors.gold, fontFamily: fonts.number, fontSize: typography.caption },
+  detail: { color: colors.textMuted, fontFamily: fonts.number, fontSize: typography.caption },
   muted: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.caption },
 });

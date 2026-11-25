@@ -5,6 +5,7 @@ import { DevScenarioPicker } from '@/application/dev/DevScenarioPicker';
 import type { FeatureFlags } from '@/application/config/featureFlags';
 import type { DevScenarioConfiguration, DevelopmentScenario } from '@/application/dev/developmentScenario';
 import { getCopy } from '@/content';
+import type { RelationshipMode } from '@/features/relationship/domain';
 import { UserProfilePage } from '@/features/auth/ui/UserProfilePage';
 import { colors, fonts, radius, spacing, typography } from '@/shared/theme/tokens';
 import { AppHeader } from './AppHeader';
@@ -21,17 +22,18 @@ interface AppShellProps extends PropsWithChildren {
   onSelectDevelopmentScenario?: (scenario: DevelopmentScenario) => void;
   onResetDevelopmentToday?: () => void;
   onConfigureDevelopment?: (config: DevScenarioConfiguration) => void;
+  relationshipMode?: RelationshipMode;
   partnerName: string;
   relationshipDays: number;
   userName: string;
 }
 
-export function AppShell({ activeTab, children, flags, onSelectTab, onSelectDevelopmentScenario, onResetDevelopmentToday, onConfigureDevelopment, onResetAndSignOut, onSignOut, partnerName, relationshipDays, userName }: AppShellProps) {
+export function AppShell({ activeTab, children, flags, onSelectTab, onSelectDevelopmentScenario, onResetDevelopmentToday, onConfigureDevelopment, onResetAndSignOut, onSignOut, partnerName, relationshipDays, userName, relationshipMode = 'partnered' }: AppShellProps) {
   const [devVisible, setDevVisible] = useState(false);
   const [fullPage, setFullPage] = useState<'profile' | 'sos' | null>(null);
   const clipboardService = useMemo(() => new ExpoClipboardService(), []);
   if (fullPage === 'sos') return <SafeAreaView style={styles.safe}><SosGuidePage clipboardService={clipboardService} onClose={() => setFullPage(null)} /></SafeAreaView>;
-  if (fullPage === 'profile') return <SafeAreaView style={styles.safe}><UserProfilePage onClose={() => setFullPage(null)} onResetAndSignOut={onResetAndSignOut} onSignOut={onSignOut} partnerName={partnerName} relationshipDays={relationshipDays} userName={userName} /></SafeAreaView>;
+  if (fullPage === 'profile') return <SafeAreaView style={styles.safe}><UserProfilePage relationshipMode={relationshipMode} onClose={() => setFullPage(null)} onResetAndSignOut={onResetAndSignOut} onSignOut={onSignOut} partnerName={partnerName} relationshipDays={relationshipDays} userName={userName} /></SafeAreaView>;
   return <SafeAreaView style={styles.safe}><AppHeader onProfile={() => setFullPage('profile')} onSos={() => setFullPage('sos')} /><View style={styles.content}>{children}</View>{onSelectDevelopmentScenario ? <Pressable onPress={() => setDevVisible(true)} style={styles.devButton}><Text style={styles.devLabel}>{getCopy('DEV_MENU_LABEL')}</Text></Pressable> : null}<BottomNavigation activeTab={activeTab} flags={flags} onSelect={onSelectTab} />{onSelectDevelopmentScenario && onResetDevelopmentToday && onConfigureDevelopment ? <DevScenarioPicker visible={devVisible} onClose={() => setDevVisible(false)} onConfigure={onConfigureDevelopment} onResetToday={onResetDevelopmentToday} onSelect={onSelectDevelopmentScenario} /> : null}</SafeAreaView>;
 }
 

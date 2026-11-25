@@ -7,6 +7,7 @@ import type {
   TutorialReward,
 } from '@/features/relationship/domain';
 import type { OnboardingRepository } from '@/features/relationship/data/OnboardingRepository';
+import { assertValidProfileDates } from '../domain/validateProfileDates';
 
 export class OnboardingService {
   constructor(private readonly repository: OnboardingRepository) {}
@@ -28,6 +29,7 @@ export class OnboardingService {
     state: OnboardingState,
     profile: RelationshipProfile,
   ): Promise<OnboardingState> {
+    assertValidProfileDates(profile);
     return this.save(userId, { ...state, profile, status: 'tutorial' });
   }
 
@@ -88,10 +90,13 @@ export class OnboardingService {
     state: OnboardingState,
     profile: RelationshipProfile,
   ): Promise<OnboardingState> {
+    assertValidProfileDates(profile);
     return this.save(userId, { ...state, profile });
   }
 
   private async save(userId: string, state: OnboardingState): Promise<OnboardingState> {
+    const stored = await this.repository.getForUser(userId);
+    if (stored.pendingTutorial) throw new Error('請先重試完成教學獎勵保存。');
     await this.repository.saveForUser(userId, state);
     return state;
   }

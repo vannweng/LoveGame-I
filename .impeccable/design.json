@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-11T07:53:10.103781+00:00",
+  "title": "LoveGame I Design System",
+  "extensions": {
+    "typographyMeta": {
+      "headline": {
+        "displayName": "像素標題",
+        "purpose": "頁面標題與事件名稱。"
+      },
+      "body": {
+        "displayName": "像素內文",
+        "purpose": "任務說明與操作資訊。"
+      }
+    },
+    "shadows": [],
+    "motion": []
+  },
+  "components": [
+    {
+      "name": "主要按鈕",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "開始或繼續旅程。",
+      "html": "<button class=\"ds-primary\">繼續這段旅程</button>",
+      "css": ".ds-primary{font-family:'DotGothic16',monospace;background:#58E4BB;color:#101821;border:2px solid #EAF6F2;border-radius:0;min-height:52px;padding:12px;font-size:16px;font-weight:700;cursor:pointer}.ds-primary:hover{opacity:.9}.ds-primary:active{opacity:.78}.ds-primary:focus-visible{outline:2px solid #EAF6F2;outline-offset:4px}.ds-primary:disabled{opacity:.45}"
+    },
+    {
+      "name": "次要按鈕",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "提供次要操作。",
+      "html": "<button class=\"ds-secondary\">返回篇章</button>",
+      "css": ".ds-secondary{font-family:'DotGothic16',monospace;background:transparent;color:#58E4BB;border:2px solid #58E4BB;border-radius:0;min-height:52px;padding:12px;font-size:16px;cursor:pointer}.ds-secondary:hover{opacity:.9}.ds-secondary:active{opacity:.78}.ds-secondary:focus-visible{outline:2px solid #EAF6F2;outline-offset:4px}"
+    },
+    {
+      "name": "卡片",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "分組標題與任務內容。",
+      "html": "<section class=\"ds-card\"><h3>下一個任務</h3><p>確認重要日的準備進度。</p></section>",
+      "css": ".ds-card{font-family:'DotGothic16',monospace;background:#15212C;color:#EAF6F2;border:2px solid #48626C;border-radius:0;padding:16px}.ds-card h3{font-size:20px;margin:0 0 12px}.ds-card p{font-size:16px;line-height:1.6;margin:0}"
+    },
+    {
+      "name": "文字輸入",
+      "kind": "input",
+      "refersTo": "",
+      "description": "關係資料編輯欄位。",
+      "html": "<label class=\"ds-field\">暱稱<input aria-label=\"暱稱\" value=\"玩家\" /></label>",
+      "css": ".ds-field{font-family:'DotGothic16',monospace;display:grid;gap:8px;color:#EAF6F2;font-size:17px}.ds-field input{font-family:'DotGothic16',monospace;background:transparent;border:2px solid #48626C;border-radius:0;color:#EAF6F2;min-height:48px;padding:8px;font-size:16px}.ds-field input:focus-visible{outline:2px solid #EAF6F2;outline-offset:4px}"
+    },
+    {
+      "name": "狀態標籤",
+      "kind": "chip",
+      "refersTo": "",
+      "description": "顯示偏好或狀態。",
+      "html": "<span class=\"ds-tag\">剛剛好</span>",
+      "css": ".ds-tag{font-family:'DotGothic16',monospace;display:inline-block;border:1px solid #58E4BB;border-radius:0;padding:4px 8px;font-size:12px;color:#58E4BB}"
+    },
+    {
+      "name": "底部導覽",
+      "kind": "nav",
+      "refersTo": "",
+      "description": "圖示與文字共同辨識目的地。",
+      "html": "<nav class=\"ds-nav\"><button aria-current=\"page\">首頁</button><button>任務</button><button>收藏</button><button>關係</button></nav>",
+      "css": ".ds-nav{font-family:'DotGothic16',monospace;display:flex;background:#15212C;border-top:2px solid #48626C;padding:8px}.ds-nav button{font-family:'DotGothic16',monospace;flex:1;border:0;background:transparent;color:#AEC5C8;min-height:56px;font-size:12px;cursor:pointer}.ds-nav button[aria-current]{background:#1A2B35;color:#58E4BB}.ds-nav button:hover{opacity:.9}.ds-nav button:focus-visible{outline:2px solid #EAF6F2;outline-offset:4px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "掌上遊戲機・青綠配色",
+    "overview": "方框、像素字體與遊戲選單，搭配深藍黑、青綠及淺色文字。",
+    "keyCharacteristics": [
+      "方角框線",
+      "青綠主要操作",
+      "Pixelarticons",
+      "單欄任務流程"
+    ],
+    "rules": [],
+    "dos": [
+      "沿用共用 tokens 與圖示。",
+      "保持手機寬度內的換行。",
+      "保留必要狀態與無障礙標籤。"
+    ],
+    "donts": [
+      "避免不同筆畫風格的文字符號圖示。",
+      "避免重複標籤與口號。"
+    ]
+  }
+}

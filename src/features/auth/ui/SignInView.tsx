@@ -16,7 +16,7 @@ export function SignInView({ error, onContinueAsDev, onSignIn }: SignInViewProps
   return (
     <PageLayout>
       <View style={styles.content}>
-        <Text style={styles.eyebrow}>{getCopy('AUTH_EYEBROW')}</Text>
+        <Text style={styles.brand}>{getCopy('APP_TITLE')}</Text>
         <Text style={styles.title}>{getCopy('AUTH_TITLE')}</Text>
         <Text style={styles.description}>{getCopy('AUTH_DESCRIPTION')}</Text>
         {error ? <PixelCard accentColor={colors.danger} title={getCopy('AUTH_FAILED')} subtitle={getCopy('AUTH_ERROR_SUBTITLE')}><Text style={styles.error}>{error}</Text></PixelCard> : null}
@@ -28,9 +28,9 @@ export function SignInView({ error, onContinueAsDev, onSignIn }: SignInViewProps
 }
 
 const styles = StyleSheet.create({
-  content: { flex: 1, gap: spacing.md, justifyContent: 'center' },
-  eyebrow: { color: colors.accent, fontFamily: fonts.number, fontSize: typography.micro, letterSpacing: 1 },
-  title: { color: colors.text, fontFamily: fonts.body, fontSize: typography.hero, fontWeight: '700' },
+  content: { flex: 1, gap: spacing.xl, justifyContent: 'center' },
+  brand: { color: colors.accent, fontFamily: fonts.display, fontSize: typography.sectionTitle },
+  title: { color: colors.text, fontFamily: fonts.body, fontSize: 36, lineHeight: 48, fontWeight: '700' },
   description: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.body, lineHeight: 24 },
   error: { color: colors.danger, fontFamily: fonts.body, fontSize: typography.caption, lineHeight: 22 },
 });

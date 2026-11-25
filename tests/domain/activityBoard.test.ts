@@ -14,6 +14,7 @@ import {
   rerollWeeklyChallenge,
   selectNextDailyActivity,
   selectDailyActivity,
+  selectNextWeeklyChallenge,
 } from '@/features/activities/domain';
 import { applyBonusExperience } from '@/game/progression/applyBonusExperience';
 
@@ -114,4 +115,21 @@ test('continuing a daily challenge selects one remaining card automatically', ()
 
   assert.ok(next.daily.templateId);
   assert.ok(!completed.state.daily.completedTemplateIds.includes(next.daily.templateId));
+});
+
+test('next daily and weekly cards clear previous reflections without changing completed records or reroll policy', () => {
+  const initial = createActivityBoardState(saturday);
+  const daily = drawDailyActivity(initial, 11, saturday);
+  const completedDaily = completeDailyActivity(daily, saturday, '第一張日常心得');
+  const nextDaily = selectNextDailyActivity(completedDaily.state, 11, saturday);
+  assert.equal(nextDaily.daily.reflection, null);
+  assert.deepEqual(nextDaily.daily.completedTemplateIds, completedDaily.state.daily.completedTemplateIds);
+  assert.equal(nextDaily.daily.completedAt, completedDaily.state.daily.completedAt);
+  const weekly = openWeeklyChallenge(nextDaily, saturday);
+  const completedWeekly = completeWeeklyChallenge(weekly, saturday, '第一張週末心得');
+  const nextWeekly = selectNextWeeklyChallenge(completedWeekly.state, saturday);
+  assert.equal(nextWeekly.weekly.reflection, null);
+  assert.deepEqual(nextWeekly.weekly.completedTemplateIds, completedWeekly.state.weekly.completedTemplateIds);
+  assert.equal(nextWeekly.weekly.completedAt, completedWeekly.state.weekly.completedAt);
+  assert.deepEqual(rerollWeeklyChallenge(nextWeekly, saturday), nextWeekly);
 });

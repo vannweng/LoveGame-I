@@ -7,6 +7,17 @@ export interface RecommendationPreferences {
   landmines: string[];
 }
 
+export interface RecommendationDestination {
+  provider: 'Pinkoi' | 'EZTABLE';
+  url: string;
+}
+
+export interface RecommendationPrice {
+  amountTwd: number;
+  basis: 'product' | 'bookingFrom';
+  checkedAt: string;
+}
+
 export interface MissionRecommendationCandidate {
   id: string;
   missionType: MissionType;
@@ -15,6 +26,9 @@ export interface MissionRecommendationCandidate {
   preferenceMatches?: string[];
   blockedByDietary?: string[];
   blockedByLandmines?: string[];
+  destination?: RecommendationDestination;
+  price?: RecommendationPrice;
+  city?: string;
 }
 
 export interface RankedMissionRecommendation extends MissionRecommendationCandidate {

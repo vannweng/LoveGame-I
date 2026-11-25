@@ -16,7 +16,13 @@ export function recommendForMission(
       ...candidate,
       matchedPreferences: (candidate.preferenceMatches ?? []).filter((tag) => selectedPreferences.has(tag)),
     }))
-    .sort((left, right) => right.matchedPreferences.length - left.matchedPreferences.length || left.id.localeCompare(right.id));
+    .sort((left, right) => {
+      if (missionType === 'gift_order' || missionType === 'date_dinner') {
+        const priceDifference = (left.price?.amountTwd ?? Infinity) - (right.price?.amountTwd ?? Infinity);
+        if (priceDifference) return priceDifference;
+      }
+      return right.matchedPreferences.length - left.matchedPreferences.length || left.id.localeCompare(right.id);
+    });
 }
 
 function intersects(blockers: string[] | undefined, selected: string[]): boolean {

@@ -10,6 +10,7 @@ import { OnboardingCrushStep } from './OnboardingCrushStep';
 
 interface OnboardingViewProps {
   state: OnboardingState;
+  savingTutorial?: boolean;
   onChooseRelationshipMode: (mode: RelationshipMode) => void;
   onStartCrushSetup: () => void;
   onStartSinglePractice: () => void;
@@ -27,7 +28,7 @@ export function OnboardingView(props: OnboardingViewProps) {
   if (props.state.status === 'crushes') return <OnboardingCrushStep candidates={props.state.crushCandidates} activeId={props.state.activeCrushId} onBack={props.onBack} onSave={props.onSaveCrushes} />;
   if (props.state.status === 'partnerName') return <PartnerNameStep initialName={props.state.profile?.partnerNickname ?? ''} onBack={props.onBack} onSave={props.onSavePartnerName} />;
   if (props.state.status === 'partnerReward') return <PartnerRewardStep onAdvance={props.onAdvance} onBack={props.onBack} />;
-  if (props.state.status === 'tutorial') return <OnboardingImportantDateStep mode={props.state.relationshipMode ?? 'single'} profile={props.state.profile} onBack={props.onBack} onSave={props.onSaveImportantDate} />;
+  if (props.state.status === 'tutorial') return <OnboardingImportantDateStep busy={props.savingTutorial} mode={props.state.relationshipMode ?? 'single'} profile={props.state.profile} onBack={props.onBack} onSave={props.onSaveImportantDate} />;
   return <RewardStep reward={props.state.tutorialReward} onFinish={props.onFinish} />;
 }
 
@@ -41,7 +42,7 @@ function SingleIntroStep({ onBack, onCrushes, onPractice }: { onBack: () => void
 
 function PartnerNameStep({ initialName, onBack, onSave }: { initialName: string; onBack: () => void; onSave: (name: string) => void }) {
   const [name, setName] = useState(initialName);
-  return <PageLayout><Text style={styles.eyebrow}>{getCopy('ONBOARDING_NEW_SAVE')}</Text><Text style={styles.title}>{getCopy('ONBOARDING_PARTNER_NAME_TITLE')}</Text><Text style={styles.copy}>{getCopy('ONBOARDING_PARTNER_NAME_COPY')}</Text><TextInput autoFocus maxLength={24} onChangeText={setName} placeholder={getCopy('ONBOARDING_PARTNER_PLACEHOLDER')} placeholderTextColor={colors.textMuted} style={styles.input} value={name} /><View style={styles.fill} /><AppButton disabled={!name.trim()} label={getCopy('ONBOARDING_PARTNER_NAME_ACTION')} onPress={() => onSave(name.trim())} /><AppButton label={getCopy('ONBOARDING_BACK')} onPress={onBack} secondary /></PageLayout>;
+  return <PageLayout><Text style={styles.eyebrow}>{getCopy('ONBOARDING_NEW_SAVE')}</Text><Text style={styles.title}>{getCopy('ONBOARDING_PARTNER_NAME_TITLE')}</Text><Text style={styles.copy}>{getCopy('ONBOARDING_PARTNER_NAME_COPY')}</Text><Text style={styles.label}>{getCopy('ONBOARDING_PARTNER_PLACEHOLDER')}</Text><TextInput accessibilityLabel={getCopy('ONBOARDING_PARTNER_PLACEHOLDER')} autoFocus maxLength={24} onChangeText={setName} placeholder={getCopy('ONBOARDING_PARTNER_PLACEHOLDER')} placeholderTextColor={colors.textMuted} style={styles.input} value={name} /><View style={styles.fill} /><AppButton disabled={!name.trim()} label={getCopy('ONBOARDING_PARTNER_NAME_ACTION')} onPress={() => onSave(name.trim())} /><AppButton label={getCopy('ONBOARDING_BACK')} onPress={onBack} secondary /></PageLayout>;
 }
 
 function PartnerRewardStep({ onAdvance, onBack }: { onAdvance: () => void; onBack: () => void }) {
@@ -60,6 +61,7 @@ function Step({ title, copy, label, onBack, onPress }: { title: string; copy: st
 const styles = StyleSheet.create({
   eyebrow: { color: colors.accent, fontFamily: fonts.number, fontSize: typography.micro, letterSpacing: 1 },
   fill: { flex: 1 },
+  label: { color: colors.text, fontFamily: fonts.body, fontSize: typography.body },
   input: { backgroundColor: colors.cardBg, borderColor: colors.border, borderRadius: 4, borderWidth: 1, color: colors.text, fontFamily: fonts.body, fontSize: typography.caption, padding: spacing.md },
   step: { flex: 1, gap: spacing.md, justifyContent: 'center' },
   title: { color: colors.text, fontFamily: fonts.body, fontSize: typography.hero, fontWeight: '700' },

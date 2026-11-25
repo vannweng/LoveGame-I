@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getJourneyEvents } from '@/features/journey/domain/journeyEvents';
-import { nextTask, previousChapter, resolveChapterTask, saveChapterReflection, saveChapterTaskDraft, startChapter, taskStatus } from '@/features/journey/domain/journey';
+import { nextTask, previousChapter, resolveChapterTask, saveChapterReflection, saveChapterTaskDraft, saveDinnerReservation, saveItineraryItem, startChapter, taskStatus } from '@/features/journey/domain/journey';
 import type { JourneyState } from '@/features/journey/domain/models';
 import { createRunHistory } from '@/game/run';
 import { deserializeJourney } from '@/features/journey/data/serializeJourney';
@@ -34,6 +34,47 @@ test('routes create 1, 3, or 5 tasks and snapshot rules and preferences', () => 
   }
 });
 
+test('every chapter starts with an editable suggested itinerary for its important date', () => {
+  const chapter = startChapter(initial(), event, 'minimal', preferences, now).chapters[0];
+  assert.equal(chapter.itinerary?.eventDate, event.date);
+  assert.ok(chapter.itinerary?.items.filter((item) => item.kind !== 'transport').every((item) => item.free));
+  assert.ok(chapter.itinerary?.items.some((item) => item.kind === 'transport'));
+});
+
+test('dinner reservation locks the restaurant time and replans untouched slots without replacing edited ones', () => {
+  const started = startChapter(initial(), event, 'full', preferences, now);
+  const chapter = started.chapters[0];
+  const dinner = chapter.tasks.find((task) => task.mission.template.missionType === 'date_dinner');
+  assert.ok(dinner);
+  const adjusted = saveItineraryItem(started, chapter.id, { ...chapter.itinerary!.items[0], startTime: '14:00', endTime: '16:30', title: '我們的下午茶' });
+  const saved = saveDinnerReservation(adjusted, chapter.id, '貓將日本料理', '19:00', now);
+  const itinerary = saved.chapters[0].itinerary!;
+  assert.deepEqual(itinerary.items.find((item) => item.id === 'prelude'), { ...chapter.itinerary!.items[0], startTime: '14:00', endTime: '16:30', title: '我們的下午茶', source: 'user' });
+  assert.equal(itinerary.items.find((item) => item.id === 'dinner')?.startTime, '19:00');
+  assert.equal(itinerary.items.find((item) => item.id === 'dinner')?.endTime, '21:00');
+  assert.equal(itinerary.items.find((item) => item.id === 'dinner')?.status, 'confirmed');
+  assert.equal(saved.chapters[0].tasks.find((task) => task.mission.id === dinner.mission.id)?.dinnerReservation?.reservedTime, '19:00');
+});
+
+test('dinner reservations and itinerary time fields reject invalid times', () => {
+  const started = startChapter(initial(), event, 'full', preferences, now);
+  const chapter = started.chapters[0];
+  const dinner = chapter.tasks.find((task) => task.mission.template.missionType === 'date_dinner');
+  assert.ok(dinner);
+  assert.throws(() => saveDinnerReservation(started, chapter.id, '餐廳', '晚上七點', now), /HH:mm/);
+  assert.throws(() => saveItineraryItem(started, chapter.id, { ...chapter.itinerary!.items[0], startTime: '18:00', endTime: '17:00' }), /結束時間/);
+});
+
+test('a dinner task requires a restaurant and reservation time before it can resolve', () => {
+  const started = startChapter(initial(), event, 'full', preferences, now);
+  const chapter = started.chapters[0];
+  const dinner = chapter.tasks.find((task) => task.mission.template.missionType === 'date_dinner');
+  assert.ok(dinner);
+  assert.throws(() => resolveChapterTask(started, chapter.id, dinner.mission.id, now), /餐廳與訂位時間/);
+  const reported = saveDinnerReservation(started, chapter.id, '貓將日本料理', '18:30', now);
+  assert.equal(resolveChapterTask(reported, chapter.id, dinner.mission.id, now).chapters[0].tasks[0].result, 'late');
+});
+
 test('same-year events have independent task IDs and dates', () => {
   const first = startChapter(initial(), event, 'minimal', preferences, now);
   const second = startChapter(first, { ...event, sourceId: 'custom:trip' }, 'minimal', preferences, now);
@@ -56,12 +97,17 @@ test('a task can resolve once, then successful chapters archive without needing 
   assert.equal(previousChapter(saved, { ...event, sourceId: 'custom:trip', date: '2027-09-20' }), undefined);
 });
 
-test('scheduled tasks cannot award rewards, normal missions never change rank, deadlines remain exclusive', () => {
+test('tasks can finish before the reminder date, normal missions never change rank, deadlines remain exclusive', () => {
   const state = startChapter(initial(), { ...event, importance: 'normal' }, 'minimal', preferences, now);
   const chapter = state.chapters[0];
   const task = chapter.tasks[0];
-  assert.throws(() => resolveChapterTask(state, chapter.id, task.mission.id, new Date(2026, 8, 16)), /尚未開放/);
-  assert.equal(taskStatus(task, new Date(2026, 8, 16)), 'scheduled');
+  const earlyTime = new Date(2026, 8, 16);
+  assert.equal(taskStatus(task, earlyTime), 'scheduled');
+  const early = resolveChapterTask(state, chapter.id, task.mission.id, earlyTime);
+  assert.equal(early.chapters[0].tasks[0].result, 'success');
+  assert.equal(early.gameState.exp, 20);
+  assert.equal(early.gameState.rankScore, 0);
+  assert.equal(taskStatus(early.chapters[0].tasks[0], earlyTime), 'done');
   assert.equal(taskStatus(task, task.mission.successUntil), 'late');
   assert.equal(taskStatus(task, task.mission.failAt), 'fail');
   const failed = resolveChapterTask(state, chapter.id, task.mission.id, task.mission.failAt);
@@ -70,7 +116,7 @@ test('scheduled tasks cannot award rewards, normal missions never change rank, d
   assert.ok(failed.chapters[0].completedAt);
 });
 
-test('a scheduled card can save a draft without resolving the mission or changing game progress', () => {
+test('a card can save a draft and still finish before its reminder date', () => {
   const state = startChapter(initial(), { ...event, date: '2026-10-20' }, 'full', preferences, now);
   const chapter = state.chapters[0];
   const card = chapter.tasks.find((task) => task.mission.template.id === 'birthday-card');
@@ -79,7 +125,9 @@ test('a scheduled card can save a draft without resolving the mission or changin
   const drafted = saveChapterTaskDraft(state, chapter.id, card.mission.id, '先寫好想說的話');
   assert.equal(drafted.chapters[0].tasks.find((task) => task.mission.id === card.mission.id)?.cardDraft, '先寫好想說的話');
   assert.deepEqual(drafted.gameState, state.gameState);
-  assert.throws(() => resolveChapterTask(drafted, chapter.id, card.mission.id, now), /尚未開放/);
+  const completed = resolveChapterTask(drafted, chapter.id, card.mission.id, now);
+  assert.equal(completed.chapters[0].tasks.find((task) => task.mission.id === card.mission.id)?.result, 'success');
+  assert.equal(completed.gameState.exp, 20);
   assert.throws(() => saveChapterTaskDraft(state, chapter.id, chapter.tasks[0].mission.id, '不是卡片'), /只有卡片/);
 });
 
