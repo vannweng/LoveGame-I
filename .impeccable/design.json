@@ -39,7 +39,7 @@
       "refersTo": "card",
       "description": "分組標題與任務內容。",
       "html": "<section class=\"ds-card\"><h3>下一個任務</h3><p>確認重要日的準備進度。</p></section>",
-      "css": ".ds-card{font-family:'DotGothic16',monospace;background:#15212C;color:#EAF6F2;border:2px solid #48626C;border-radius:0;padding:16px}.ds-card h3{font-size:20px;margin:0 0 12px}.ds-card p{font-size:16px;line-height:1.6;margin:0}"
+      "css": ".ds-card{font-family:'DotGothic16',monospace;background:#15212C;color:#EAF6F2;border:2px solid #5A7883;border-radius:0;padding:16px}.ds-card h3{font-size:20px;margin:0 0 12px}.ds-card p{font-size:16px;line-height:1.6;margin:0}"
     },
     {
       "name": "文字輸入",
@@ -47,7 +47,7 @@
       "refersTo": "",
       "description": "關係資料編輯欄位。",
       "html": "<label class=\"ds-field\">暱稱<input aria-label=\"暱稱\" value=\"玩家\" /></label>",
-      "css": ".ds-field{font-family:'DotGothic16',monospace;display:grid;gap:8px;color:#EAF6F2;font-size:17px}.ds-field input{font-family:'DotGothic16',monospace;background:transparent;border:2px solid #48626C;border-radius:0;color:#EAF6F2;min-height:48px;padding:8px;font-size:16px}.ds-field input:focus-visible{outline:2px solid #EAF6F2;outline-offset:4px}"
+      "css": ".ds-field{font-family:'DotGothic16',monospace;display:grid;gap:8px;color:#EAF6F2;font-size:17px}.ds-field input{font-family:'DotGothic16',monospace;background:transparent;border:2px solid #5A7883;border-radius:0;color:#EAF6F2;min-height:48px;padding:8px;font-size:16px}.ds-field input:focus-visible{outline:2px solid #EAF6F2;outline-offset:4px}"
     },
     {
       "name": "狀態標籤",
@@ -63,7 +63,7 @@
       "refersTo": "",
       "description": "圖示與文字共同辨識目的地。",
       "html": "<nav class=\"ds-nav\"><button aria-current=\"page\">首頁</button><button>任務</button><button>收藏</button><button>關係</button></nav>",
-      "css": ".ds-nav{font-family:'DotGothic16',monospace;display:flex;background:#15212C;border-top:2px solid #48626C;padding:8px}.ds-nav button{font-family:'DotGothic16',monospace;flex:1;border:0;background:transparent;color:#AEC5C8;min-height:56px;font-size:12px;cursor:pointer}.ds-nav button[aria-current]{background:#1A2B35;color:#58E4BB}.ds-nav button:hover{opacity:.9}.ds-nav button:focus-visible{outline:2px solid #EAF6F2;outline-offset:4px}"
+      "css": ".ds-nav{font-family:'DotGothic16',monospace;display:flex;background:#15212C;border-top:2px solid #5A7883;padding:8px}.ds-nav button{font-family:'DotGothic16',monospace;flex:1;border:0;background:transparent;color:#AEC5C8;min-height:56px;font-size:12px;cursor:pointer}.ds-nav button[aria-current]{background:#1A2B35;color:#58E4BB}.ds-nav button:hover{opacity:.9}.ds-nav button:focus-visible{outline:2px solid #EAF6F2;outline-offset:4px}"
     }
   ],
   "narrative": {

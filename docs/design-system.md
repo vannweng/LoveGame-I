@@ -1,196 +1,148 @@
-# LoveGame I — 16-Bit 像素風設計系統與 UI/UX 指南
+# LoveGame I — 設計系統與開發指南
 
-本文件是 LoveGame I 全站的 **16-Bit 復古像素電玩（Pixel Art Arcade）**設計系統規範。包含核心色票、字型階層、間距與圓角、標準組件契約及開發檢查清單，供團隊與 AI 開發者快速查閱。
+本文件說明如何在程式中使用設計系統。**權威來源**為：
 
-## 1. 設計核心原則
+- 視覺規格：[DESIGN.md](../DESIGN.md)
+- 實際數值：[tokens.ts](../src/shared/theme/tokens.ts)
+- 共用元件：`src/shared/ui/`
 
-1. **硬核像素邊框（Border-Only Card Architecture）**
-   - 卡片背景 `cardBg` 必須與頁面背景 `pageBg` 完全相同；禁止用實心底色製造浮起效果。
-   - 模組以 1–2px 銳利邊框區分；標準為 `borderWidth: 2` 與 `borderColor`。
-   - 圓角維持直角或像素微方角，使用 `borderRadius: 2–4`。
-2. **像素字型貫穿（16-Bit Pixel Typography）**
-   - 英文、數字與 HUD 使用 `PressStart2P_400Regular` 或 `PixelifySans_700Bold`。
-   - 中文標題與內文使用 `DotGothic16_400Regular`。
-   - 全站字級經 `fs(size)` 與 `FONT_SCALE = 1.15` 進行縮放。
-3. **電玩化 HUD 語言（Retro Arcade Language）**
-   - 介面採用 `[P1/P2]`、`[HP: 85/100]`、`[STAGE 520 DAYS]`、`[QUEST]`、`[VAULT]`、`[SOS]` 等遊戲語彙。
-4. **簡短有力標題（Short Title Constraint）**
-   - 標題以 2–4 字為主，最多 6 字，例如「檔案設定」、「年度預算」、「約會足跡」。
+若本文件與上述來源不一致，以上述來源為準，並更新本文件。
 
-## 2. 核心 16-Bit 像素色票
+## 1. 設計原則
 
-### 2.1 基礎色票
+1. **掌上遊戲機介面**：方角、像素字體、遊戲選單式的版面層級；色彩為深藍黑底搭配青綠。
+2. **方角框線分組**：元件以框線與表面色分組，`radius` 全部為 0，共用框線寬度 `borderWidth = 2`。卡片底色 `cardBg` 比頁面底色 `pageBg` 亮一階，不使用陰影。
+3. **單一像素字體**：全站使用 `DotGothic16_400Regular`（`fonts.body`／`display`／`number` 皆指向它）。
+4. **版面承載資訊**：以層級呈現事件、任務與進度，不用重複標籤與口號填補空間。
+5. **顏色不單獨傳達狀態**：成功、警告、失敗一律搭配文字或圖示。
 
-| Token (`PIXEL_PALETTE`) | HEX | 用途 |
+## 2. 色票
+
+數值皆來自 `colors`，元件內不得寫死十六進位色碼。
+
+| Token | HEX | 用途 |
 | --- | --- | --- |
-| `DEEP_SPACE` | `#0D0E15` | 暗色頁面與卡片底色、高對比暗色外框 |
-| `FAMICOM_CREAM` | `#F5F2EB` | 亮色頁面與卡片底色、暗色版主文字 |
-| `ARCADE_CYAN` | `#00E5FF` | 品牌主色、主按鈕、Active 導覽與重點圖示 |
-| `COIN_GOLD` | `#FFD700` | 金幣庫、VIP、五星與高勝率指標 |
-| `SOLAR_ORANGE` | `#FF6D00` | 連勝天數、倒數高亮與 STAGE 標籤 |
-| `WARNING_RED` | `#FF1744` | SOS 警報、地雷標籤與低 HP |
-| `ROMANTIC_PINK` | `#FF4081` | 紀念日倒數、心動指數與伴侶標籤 |
-| `HP_GREEN` | `#00E676` | 安全狀態與任務完成 |
-| `ARCADE_VIOLET` | `#B388FF` | 特殊成就與進階設定 |
+| `pageBg` | `#101821` | 頁面底色 |
+| `cardBg` | `#15212C` | 卡片底色 |
+| `subBoxBg` | `#1A2B35` | 次要區塊、導覽選取區 |
+| `border` | `#5A7883` | 預設框線 |
+| `text` | `#EAF6F2` | 主要文字 |
+| `textMuted` | `#AEC5C8` | 輔助文字 |
+| `accent` | `#58E4BB` | 品牌主色、主按鈕、焦點、選取狀態 |
+| `gold` | `#E5CA80` | 獎勵、EXP |
+| `orange` | `#F4B580` | 警告 |
+| `danger` | `#FF8B95` | 失敗、危險操作 |
+| `pink` | `#EAAFC0` | 關係、伴侶 |
+| `safe` | `#86D9B0` | 成功、完成 |
+| `violet` | `#B3C6D8` | 次要強調 |
+| `ink` | `#101821` | 亮色填色上的深色文字 |
 
-### 2.2 語意化主題色票
+目前只有深色主題，沒有亮色主題。
 
-透過 `useTheme()` 取得 theme 物件；實作時須以語意 token 取代元件內寫死的 HEX。
-
-```ts
-theme.pageBg           // Dark: #0D0E15; Light: #F5F2EB
-theme.cardBg           // 必須與 pageBg 相同
-theme.subBoxBg         // Dark: #161726; Light: #E8E2D5
-theme.borderColor      // Dark: #363753; Light: #C8BFAD
-theme.textPrimary      // Dark: #F5F2EB; Light: #0D0E15
-theme.textSecondary    // Dark: #9D9BB5; Light: #6B687E
-theme.primary          // #00E5FF
-theme.accentOrange     // #FF6D00
-theme.accentEmergency  // Dark: #FF1744; Light: #D50000
-theme.pixelGold        // #FFD700
-theme.pixelGreen       // #00E676
-theme.pixelPink        // #FF4081
-theme.pixelBorderWidth // 2
-```
-
-## 3. 字型與版面 Token
-
-### 3.1 字型定義
+## 3. 字型與字級
 
 ```ts
-import { PIXEL_FONTS, fs } from '../services/themeService';
-
-PIXEL_FONTS.NUMBER  // PressStart2P_400Regular：數字、英文標籤、HUD
-PIXEL_FONTS.DISPLAY // PixelifySans_700Bold：大型展示標題
-PIXEL_FONTS.BODY    // DotGothic16_400Regular：中文標題、內文、按鈕
+import { colors, fonts, fs, typography, spacing, radius, borderWidth } from '@/shared/theme/tokens';
 ```
 
-### 3.1.1 字型載入與 fallback
+| `typography` | 基準 px | 用途 |
+| --- | --- | --- |
+| `hero` | 28 | 頁面大標題 |
+| `sectionTitle` | 20 | 區塊與卡片標題 |
+| `cardTitle` | 17 | 卡片次標題 |
+| `body` | 16 | 內文 |
+| `caption` | 14 | 輔助說明、標籤文字 |
+| `tag` | 13 | 狀態標籤 |
+| `micro` | 12 | 最小輔助資訊 |
 
-App 使用 `@expo-google-fonts/dotgothic16` 與 `expo-font` 載入 `DotGothic16_400Regular`。載入期間顯示系統讀取畫面；若字型載入失敗，或字型缺少個別繁體中文字形，系統會使用裝置的等寬字型 fallback 繼續顯示：iOS 為 `Menlo`，Android／Web 為 `monospace`。
+- `fs(size)` 會乘上 `fontScale = 1.15` 並四捨五入，需要縮放時使用。
+- 首頁事件標題為 32px（行高 44），倒數為 52px（行高 64）。
+- 文字必須能換行，長標題、日期與按鈕文字在手機寬度內自然換行。
 
-因此字型載入失敗不會阻擋使用者登入或操作。不得將字型載入失敗視為致命錯誤，也不得要求使用者自行安裝字型。
+### 字型載入與 fallback
 
-### 3.2 字階尺寸
+App 使用 `@expo-google-fonts/dotgothic16` 與 `expo-font` 載入字體。載入期間顯示讀取畫面；若載入失敗或缺少個別繁體中文字形，使用 `fonts.fallback`（iOS 為 `Menlo`，Android／Web 為 `monospace`）繼續顯示。字型載入失敗不得阻擋使用者登入或操作，也不視為致命錯誤。
+
+## 4. 間距與框線
 
 ```ts
-TYPOGRAPHY.HERO          // 22px：Header 產品名、大數字
-TYPOGRAPHY.SECTION_TITLE // fs(14) = 16px：卡片主標題
-TYPOGRAPHY.CARD_TITLE    // fs(12) = 14px：卡片次標題／中型按鈕
-TYPOGRAPHY.BODY          // fs(12) = 14px：標準內文／L 按鈕文字
-TYPOGRAPHY.CAPTION       // fs(10) = 12px：輔助說明／M 按鈕文字
-TYPOGRAPHY.TAG           // fs(10) = 12px：狀態標籤／徽章
-TYPOGRAPHY.MICRO         // fs(10) = 12px：HUD、英文副標籤
+spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 }
+radius = { none: 0, xs: 0, sm: 0, md: 0 }
+borderWidth = 2   // 首頁事件主框為 3
 ```
 
-### 3.3 間距與圓角
+頁面內容單欄、置中、最大寬度 720；內容區外距與區塊間距為 `xl`。
 
-```ts
-SPACING.XS  // 4px
-SPACING.SM  // 8px
-SPACING.MD  // 12px
-SPACING.LG  // 16px
-SPACING.XL  // 20px
-SPACING.XXL // 24px
+## 5. 共用元件
 
-PIXEL_RADIUS.NONE // 0px
-PIXEL_RADIUS.XS   // 2px：按鈕、Tag、輸入框
-PIXEL_RADIUS.SM   // 4px：卡片、Modal 容器
-PIXEL_RADIUS.MD   // 8px：特殊視圖外框
-```
+皆位於 `src/shared/ui/`，由 `index.ts` 匯出。新畫面優先使用這些元件，不另建樣式相近的元件。
 
-## 4. 標準 UI 元件契約
-
-### 4.1 主題 Hook
+### 5.1 `AppButton`
 
 ```tsx
-import { View, Text } from 'react-native';
-import { useTheme } from '../hooks/useTheme';
-
-export function MyComponent() {
-  const { theme, fonts, fs, spacing } = useTheme();
-
-  return (
-    <View style={{ backgroundColor: theme.pageBg, padding: spacing.LG }}>
-      <Text style={{ color: theme.textPrimary, fontFamily: fonts.BODY, fontSize: fs(14) }}>
-        像素風格視圖
-      </Text>
-    </View>
-  );
-}
+<AppButton label="儲存" onPress={save} />                       // 主要：青綠填色、深色文字
+<AppButton label="取消" onPress={close} secondary />            // 次要：透明底、青綠框線
+<AppButton label="刪除" onPress={remove} tone="danger" />       // 危險
+<AppButton label="略過" onPress={skip} size="S" disabled />     // 小尺寸、停用
 ```
 
-### 4.2 像素卡片 `PixelCard`
+- `size`：`M` 最低高度 52，`S` 最低高度 48（皆符合觸控目標下限）。
+- 按壓透明度 0.78，停用 0.45；文字可換行；已宣告 `accessibilityRole="button"`。
 
-卡片使用 border-only 視覺：背景必須為 `theme.cardBg`，以 `theme.pixelBorderWidth` 和 `theme.borderColor` 分割。
+### 5.2 `PixelCard`
 
 ```tsx
-<PixelCard
-  headerTitle="約會足跡"
-  headerSubtitle="DATE MEMORIES"
-  headerRight={<PixelTag label="PRO VIP" color={theme.pixelGold} size="S" />}
->
-  {/* 卡片內容 */}
+<PixelCard title="下一個任務" subtitle="今天" trailing={<PixelTag label="進行中" />}>
+  {/* 內容 */}
 </PixelCard>
 ```
 
-### 4.3 卡片直排標題 `CardHeaderTitle`
+底色 `cardBg`、內距 `lg`、內容間距 `md`。`accentColor` 控制框線顏色（預設 `border`），用來表達狀態。`title`、`subtitle`、`trailing` 皆為選填，未提供 `title` 時不顯示標題列。
 
-卡片標題使用上下直排：中文在上方（`fs(16)`），英文副標在下方（`fs(8)`、主題色）。
+### 5.3 `PixelTag`
 
 ```tsx
-<CardHeaderTitle
-  title="年度預算"
-  subtitle="ANNUAL VAULT"
-  subtitleColor={theme.pixelGold}
-/>
+<PixelTag label="曖昧" color={colors.pink} />
+<PixelTag label="已完成" color={colors.safe} size="M" />
 ```
 
-### 4.4 像素按鈕 `PixelButton`
+透明底、細框、顏色同時作用於框線與文字；`size` 為 `S`（預設）或 `M`；文字可換行。
 
-- `S`（32px）：警報與小操作，例如 `SOS`、`SWAP`、`圖鑑`；文字不加括號。
-- `M`（40px）：標準操作，例如 `[+ ADD LOG]`、`[PLAN →]`、`[儲存設定]`；元件自動加上 `[`、`]`。
-- Variant：`primary`（青底黑字）、`secondary`（灰底白字）、`danger`（紅底白字）、`outline`（透明底青框）。
+### 5.4 `PixelIcon`
 
-```tsx
-<PixelButton title="儲存設定" onPress={handleSave} size="M" variant="primary" />
-<PixelButton title="SOS" onPress={handleEmergency} size="S" variant="danger" />
-<PixelButton title="查看圖鑑" onPress={handleView} size="M" variant="outline" />
-```
+所有圖示使用 Pixelarticons，經 `PixelIcon` 呈現；主要導覽圖示尺寸 24。不得混用不同筆畫風格的文字符號或 emoji 當圖示。
 
-### 4.5 像素標籤 `PixelTag`
+### 5.5 `ScreenState`
 
-- 背景必須透明，使用 `borderWidth: 1` 像素邊框。
-- `S`：padding `4 × 8`、`fs(7)`；`M`：padding `6 × 10`、`fs(8)`。
+每個 View 都要明確處理 `loading`、`empty`、`error`、`success`；資料未成功時不渲染 feature 內容。
 
 ```tsx
-<PixelTag label="🔥 12 DAYS" color={theme.accentOrange} size="S" />
-<PixelTag label="1/4 UNLOCKED" color={theme.primary} size="M" />
-<PixelTag label="PRO VIP" color={theme.pixelGold} size="S" />
-```
-
-### 4.6 畫面狀態 `ScreenState`
-
-每個 View 都必須明確處理 `loading`、`empty`、`error`、`success`。資料尚未成功時，不渲染 feature 內容；由共用狀態容器維持一致的像素視覺與重試行為。
-
-```tsx
-<ScreenState state={{ kind: 'loading' }}>
+<ScreenState state={{ kind: 'loading', label: '讀取中' }}>
   <FeatureView />
 </ScreenState>
 
-<ScreenState
-  state={{ kind: 'error', onRetry: reload, title: getCopy('STATUS_ERROR_TITLE') }}
->
+<ScreenState state={{ kind: 'error', title: '載入失敗', copy: '請稍後再試', onRetry: reload }}>
   <FeatureView />
 </ScreenState>
+
+// empty：{ kind: 'empty', title, copy }；success：{ kind: 'success' }
 ```
 
-## 5. 開發檢查清單
+### 5.6 其他
+
+`Dialog`、`BottomSheet`、`PageLayout`、`ProgressBar`、`StatusBadge`、`MissionCard`、`RewardSummary`、`DateField` 等依各自檔案的 props 使用。
+
+### 5.7 導覽
+
+行動版底部導覽將各目的地等寬分配；每個項目最低高度 56，使用圖示加文字標籤，選取項目的圖示與文字採 `accent` 並以 `subBoxBg` 標示區域，並透過 `accessibilityState` 公告選取狀態。
+
+## 6. 開發檢查清單
 
 - [ ] 禁止使用 `any`；未定型別使用 `unknown` 加上 type guard。
-- [ ] 卡片背景 `cardBg` 與頁面背景 `pageBg` 相同。
-- [ ] 標題以 2–4 字為主，最多 6 字。
-- [ ] 卡片標題使用 `CardHeaderTitle` 的中英上下直排。
-- [ ] 元件不寫死十六進位顏色；一律由 `themeService`／`useTheme()` 提供語意 token。
-- [ ] 數字、英文 HUD 與中文內容分別使用指定像素字型。
-- [ ] 主操作、危險狀態與完成狀態使用對應的語意色，不只依賴顏色傳達狀態。
+- [ ] 顏色、字級、間距、框線一律取自 `tokens.ts`，不寫死數值。
+- [ ] 沿用 `AppButton`、`PixelCard`、`PixelTag`、`PixelIcon`、`ScreenState`。
+- [ ] 方角（`radius` 皆為 0）；若有刻意例外，需在 `DESIGN.md` 註明。
+- [ ] 320px 寬度無橫向溢出，長文字可換行。
+- [ ] 互動元件具備 `accessibilityRole`／`accessibilityState`，觸控目標不小於 48。
+- [ ] 狀態以文字或圖示搭配顏色表達，不只依賴顏色。
+- [ ] 資料存取經 repository、外部服務經 adapter、遊戲數值由 domain 層管理；介面只讀取結果並轉交操作。

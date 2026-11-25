@@ -4,7 +4,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { getCopy } from '@/content';
 import type { CrushCandidate, OnboardingState, RelationshipMode, RelationshipProfile, TutorialReward } from '@/features/relationship/domain';
 import { AppButton, PageLayout, PixelCard } from '@/shared/ui';
-import { colors, fonts, spacing, typography } from '@/shared/theme/tokens';
+import { colors, fonts, radius, spacing, typography } from '@/shared/theme/tokens';
 import { OnboardingImportantDateStep } from './OnboardingImportantDateStep';
 import { OnboardingCrushStep } from './OnboardingCrushStep';
 
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   eyebrow: { color: colors.accent, fontFamily: fonts.number, fontSize: typography.micro, letterSpacing: 1 },
   fill: { flex: 1 },
   label: { color: colors.text, fontFamily: fonts.body, fontSize: typography.body },
-  input: { backgroundColor: colors.cardBg, borderColor: colors.border, borderRadius: 4, borderWidth: 1, color: colors.text, fontFamily: fonts.body, fontSize: typography.caption, padding: spacing.md },
+  input: { backgroundColor: colors.cardBg, borderColor: colors.border, borderRadius: radius.none, borderWidth: 1, color: colors.text, fontFamily: fonts.body, fontSize: typography.caption, padding: spacing.md },
   step: { flex: 1, gap: spacing.md, justifyContent: 'center' },
   title: { color: colors.text, fontFamily: fonts.body, fontSize: typography.hero, fontWeight: '700' },
   copy: { color: colors.textMuted, fontFamily: fonts.body, fontSize: typography.body, lineHeight: 24 },

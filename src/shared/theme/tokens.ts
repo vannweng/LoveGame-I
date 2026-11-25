@@ -4,7 +4,7 @@ export const colors = {
   pageBg: '#101821',
   cardBg: '#15212C',
   subBoxBg: '#1A2B35',
-  border: '#48626C',
+  border: '#5A7883',
   text: '#EAF6F2',
   textMuted: '#AEC5C8',
   accent: '#58E4BB',

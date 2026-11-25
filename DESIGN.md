@@ -6,7 +6,7 @@ colors:
   page-bg: "#101821"
   card-bg: "#15212C"
   surface-variant: "#1A2B35"
-  outline: "#48626C"
+  outline: "#5A7883"
   text: "#EAF6F2"
   text-muted: "#AEC5C8"
   reward: "#E5CA80"
@@ -84,7 +84,7 @@ components:
 
 ## Shapes
 
-元件採方角。共用框線寬度為 2，首頁事件主框為 3。Pixelarticons 以同一個共用元件呈現，主要導覽圖示尺寸為 24。
+元件採方角。共用框線寬度為 2，首頁事件主框為 3。唯一的例外是行程時間軸的圓點（`ImportantDateItinerary`），使用圓形。Pixelarticons 以同一個共用元件呈現，主要導覽圖示尺寸為 24。
 
 ## Components
 
